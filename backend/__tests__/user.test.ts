@@ -41,6 +41,16 @@ describe('User API', () => {
     expect(result.success).toBe(true);
   });
 
+  it('should get authorized user', async () => {
+    const response = await request(app)
+      .get('/api/v1/users/authorized')
+      .set('Cookie', userWithCookie.authCookie);
+
+    const result = userSchema.safeParse(response.body.data.user);
+    expect(response.status).toBe(200);
+    expect(result.success).toBe(true);
+  });
+
   it('should return 404 for non-existent user', async () => {
     const response = await request(app)
       .get('/api/v1/users/9999')

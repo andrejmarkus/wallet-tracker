@@ -3,6 +3,6 @@ declare namespace Express {
     id: string;
     email: string;
     username: string;
-    telegramChatId?: string;
+    telegramChatId?: string | null;
   }
 }

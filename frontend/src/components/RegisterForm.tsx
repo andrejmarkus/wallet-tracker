@@ -20,7 +20,7 @@ const RegisterForm = () => {
             password: data.password
         });
         if (response.status === 201) {
-            navigate('/');
+            navigate('/app', { replace: true });
             toast.success("Registration successful!");
             return;
         }

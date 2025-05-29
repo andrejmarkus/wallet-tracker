@@ -6,8 +6,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import api from "../lib/api";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useAuth } from "../lib/context/AuthContext";
 
 const LoginForm = () => {
+    const { fetchUser } = useAuth();
     const navigate = useNavigate();
     const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>({
         resolver: zodResolver(loginFormDataSchema),
@@ -16,11 +18,12 @@ const LoginForm = () => {
     const onSubmit: SubmitHandler<LoginFormData> = async (data) => {
         const response = await api.post("/auth/login", data);
         if (response.status === 200) {
-            navigate('/');
+            await fetchUser();
+            navigate("/app", { replace: true });
             toast.success("Login successful!");
-            return;
+        } else {
+            toast.error(`Login failed. ${response.data.message ?? 'Please try again.'}`);
         }
-        toast.error(`Login failed. ${response.data.message ?? 'Please try again.'}`);
     }
 
     return (

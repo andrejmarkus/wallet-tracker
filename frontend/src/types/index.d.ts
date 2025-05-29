@@ -4,3 +4,10 @@ import type { UseFormRegister } from "react-hook-form";
 
 declare type RegisterFormData = z.infer<typeof registerFormDataSchema>;
 declare type LoginFormData = z.infer<typeof loginFormDataSchema>;
+
+declare type User = {
+    id: string;
+    email: string;
+    username: string;
+    telegramChatId?: string | null;
+}

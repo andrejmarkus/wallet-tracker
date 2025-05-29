@@ -2,8 +2,9 @@ import { NextFunction, Request, Response } from 'express';
 import { userLoginSchema, userRegisterSchema } from '../schemas';
 import { InvalidRequestError, UserNotLoggedInError } from '../errors';
 import { generateJwtRefreshToken, generateJwtToken, loginUser, registerUser } from '../services/auth.service';
-import { JWT_REFRESH_SECRET, NODE_ENV } from '../config/env';
+import { JWT_EXPIRES_IN, JWT_REFRESH_EXPIRES_IN, JWT_REFRESH_SECRET, NODE_ENV } from '../config/env';
 import { JwtPayload, verify } from 'jsonwebtoken';
+import ms from 'ms';
 
 export const login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
@@ -18,12 +19,14 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: NODE_ENV === 'production',
-      sameSite: 'lax'
+      sameSite: 'lax',
+      maxAge: ms(JWT_REFRESH_EXPIRES_IN)
     });
     res.cookie('token', token, {
       httpOnly: true,
       secure: NODE_ENV === 'production',
-      sameSite: 'lax'
+      sameSite: 'lax',
+      maxAge: ms(JWT_EXPIRES_IN)
     });
     res.status(200).json({
       status: 'success',
@@ -50,12 +53,14 @@ export const register = async (req: Request, res: Response, next: NextFunction):
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: NODE_ENV === 'production',
-      sameSite: 'lax'
+      sameSite: 'lax',
+      maxAge: ms(JWT_REFRESH_EXPIRES_IN)
     });
     res.cookie('token', token, {
       httpOnly: true,
       secure: NODE_ENV === 'production',
-      sameSite: 'lax'
+      sameSite: 'lax',
+      maxAge: ms(JWT_EXPIRES_IN)
     });
     res.status(201).json({
       status: 'success',
@@ -77,11 +82,13 @@ export const logout = async (req: Request, res: Response, next: NextFunction): P
       httpOnly: true,
       secure: NODE_ENV === 'production',
       sameSite: 'lax',
+      maxAge: ms(JWT_REFRESH_EXPIRES_IN)
     });
     res.clearCookie('token', {
       httpOnly: true,
       secure: NODE_ENV === 'production',
       sameSite: 'lax',
+      maxAge: ms(JWT_EXPIRES_IN)
     });
     res.status(200).json({ message: 'User signed out successfully' });
   } catch (error) {
@@ -102,6 +109,7 @@ export const refresh = async (req: Request, res: Response, next: NextFunction): 
       httpOnly: true,
       secure: NODE_ENV === 'production',
       sameSite: 'lax',
+      maxAge: ms(JWT_EXPIRES_IN)
     });
     
     res.status(200).json({ message: 'Token refreshed successfully' });
