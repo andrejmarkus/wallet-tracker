@@ -11,6 +11,7 @@ import userRouter from './routes/user.routes'
 import authRouter from './routes/auth.routes'
 import tokenRouter from './routes/token.routes'
 import telegramRouter from './routes/telegram.routes'
+import walletRouter from './routes/wallet.controller'
 
 const app = express()
 
@@ -41,6 +42,7 @@ app.use('/api/v1/auth', authRouter)
 app.use('/api/v1/users', userRouter)
 app.use('/api/v1/tokens', tokenRouter)
 app.use('/api/v1/telegram', telegramRouter)
+app.use('/api/v1/wallets', walletRouter)
 
 app.use(errorMiddleware)
 

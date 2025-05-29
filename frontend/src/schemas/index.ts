@@ -14,3 +14,10 @@ export const loginFormDataSchema = z.object({
     username: z.string().min(1, "Userame is required"),
     password: z.string().min(6, "Password must be at least 6 characters"),
 });
+
+export const walletSchema = z.object({
+    address: z
+        .string()
+        .min(32, "Wallet address must be between 32 and 44 characters long")
+        .max(44, "Wallet address must be between 32 and 44 characters long")
+});

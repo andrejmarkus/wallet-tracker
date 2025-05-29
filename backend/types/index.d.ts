@@ -5,7 +5,8 @@ import {
   tokenRequestSchema,
   tokenDetailsSchema,
   telegramTokenSchema,
-  userSchema
+  userSchema,
+  walletSchema
 } from '../schemas';
 
 declare type UserLogin = z.infer<typeof userLoginSchema>;
@@ -17,6 +18,8 @@ declare type TokenDetails = z.infer<typeof tokenDetailsSchema>;
 declare type TelegramToken = z.infer<typeof telegramTokenSchema>;
 
 declare type User = z.infer<typeof userSchema>;
+
+declare type Wallet = z.infer<typeof walletSchema>;
 
 declare interface RawTransaction {
   signature: string;

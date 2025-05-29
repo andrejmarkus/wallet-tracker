@@ -3,10 +3,8 @@ import { DatabaseOperationError, UserNotFoundError } from '../errors';
 import { User } from '../types';
 
 export async function getUsers(): Promise<User[]> {
-  let users;
-
   try {
-    users = await prisma.user.findMany({
+    const users = await prisma.user.findMany({
       select: {
         id: true,
         email: true,
@@ -14,11 +12,11 @@ export async function getUsers(): Promise<User[]> {
         telegramChatId: true,
       },
     });
+
+    return users;
   } catch {
     throw new DatabaseOperationError();
   }
-
-  return users;
 }
 
 export async function getUserById(id: string): Promise<User> {

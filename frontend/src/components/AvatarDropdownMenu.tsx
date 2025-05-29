@@ -2,6 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import api from '../lib/api'
 import { toast } from 'react-toastify';
 import { useAuth } from '../lib/context/AuthContext';
+import { LogOut, User } from 'lucide-react';
 
 const AvatarDropdownMenu = () => {
     const { setUser } = useAuth();
@@ -20,10 +21,12 @@ const AvatarDropdownMenu = () => {
 
     return (
         <li>
-            <NavLink to={"/profile"} className='justify-between'>
+            <NavLink to={"/profile"}>
+                <User />
                 Profile
             </NavLink>
-            <button className='btn btn-ghost' onClick={handleLogout}>
+            <button onClick={handleLogout}>
+                <LogOut />
                 Logout
             </button>
         </li>

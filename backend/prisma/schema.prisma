@@ -21,8 +21,11 @@ model User {
   password           String
   telegramChatId     String?             @unique
   telegramLinkTokens TelegramLinkToken[]
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  wallets Wallet[] @relation("UserWallets")
 }
 
 model TelegramLinkToken {
@@ -34,4 +37,13 @@ model TelegramLinkToken {
   updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Wallet {
+  address String @id
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users User[] @relation("UserWallets")
 }
