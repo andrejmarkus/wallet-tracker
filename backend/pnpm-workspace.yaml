@@ -1,0 +1,33 @@
+onlyBuiltDependencies:
+  - ' '
+  - '-'
+  - '1'
+  - '2'
+  - '5'
+  - '6'
+  - '8'
+  - '@prisma/client'
+  - '@prisma/engines'
+  - a
+  - b
+  - bigint-buffer
+  - bufferutil
+  - c
+  - d
+  - e
+  - f
+  - g
+  - i
+  - k
+  - keccak
+  - l
+  - n
+  - p
+  - prisma
+  - r
+  - s
+  - secp256k1
+  - t
+  - u
+  - utf-8-validate
+  - v
