@@ -20,7 +20,7 @@ afterAll(async () => {
 });
 
 describe('Wallet API', () => {
-    it('should create a new wallet', async () => {
+    it('should create a new wallet for authorized user', async () => {
         const newWallet = { address: wallet };
         const response = await request(app)
             .post('/api/v1/wallets')
@@ -45,7 +45,7 @@ describe('Wallet API', () => {
         expect(result).toBe(true);
     });
 
-    it('should get wallets of authorized user', async () => {
+    it('should get all wallets of authorized user', async () => {
         const response = await request(app)
             .get('/api/v1/wallets/authorized')
             .set('Cookie', userWithCookie.authCookie);
@@ -58,12 +58,58 @@ describe('Wallet API', () => {
         expect(result).toBe(true);
     });
 
-    it('should delete a wallet by address', async () => {
+    it('should delete a wallet of authorized user', async () => {
         const response = await request(app)
             .delete(`/api/v1/wallets/${wallet}`)
             .set('Cookie', userWithCookie.authCookie);
-
+        
         expect(response.status).toBe(200);
         expect(response.body.message).toBe('Wallet deleted successfully');
+    });
+
+    it('should have no wallets after deletion', async () => {
+        const response = await request(app)
+            .get('/api/v1/wallets')
+            .set('Cookie', userWithCookie.authCookie);
+
+        expect(response.status).toBe(200);
+        expect(response.body.data.wallets).toEqual([]);
+    });
+
+    it('should return 404 for non-existent wallet deletion', async () => {
+        const nonExistentWallet = "254RB8oNnV2sGphrjgggwNWTk97LbP82RJXneSmejqSh";
+        const response = await request(app)
+            .delete(`/api/v1/wallets/${nonExistentWallet}`)
+            .set('Cookie', userWithCookie.authCookie);
+
+        expect(response.status).toBe(404);
+        expect(response.body.message).toBe('Wallet not found');
+    });
+
+    it('should return 401 for unauthorized wallet creation', async () => {
+        const newWallet = { address: wallet };
+        const response = await request(app)
+            .post('/api/v1/wallets')
+            .send(newWallet);
+        
+        expect(response.status).toBe(401);
+    });
+
+    it('should return 400 for invalid wallet creation request', async () => {
+        const invalidWallet = { address: "invalid-address" };
+        const response = await request(app)
+            .post('/api/v1/wallets')
+            .set('Cookie', userWithCookie.authCookie)
+            .send(invalidWallet);
+        
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe('Invalid request data');
+    });
+
+    it('should return 401 for getting wallets of unauthorized user', async () => {
+        const response = await request(app)
+            .get('/api/v1/wallets/authorized')
+
+        expect(response.status).toBe(401);
     });
 })

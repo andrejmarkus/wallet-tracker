@@ -54,7 +54,6 @@ export default function transactionSocket(namespace: Namespace): void {
     socket.on(
       'subscribeWallet',
       ({ userId, walletAddress }: { userId: string; walletAddress: string }) => {
-        if (!socket.user.telegramChatId) return;
         pumpPortal.subscribeWallet(userId, walletAddress);
         socket.emit('walletSubscribed', {
           userId,

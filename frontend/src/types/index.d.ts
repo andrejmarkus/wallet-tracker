@@ -12,3 +12,22 @@ declare type User = {
     username: string;
     telegramChatId?: string | null;
 }
+
+declare type Transaction = {
+    tokenAddress: string;
+    tokenName: string;
+    tokenSymbol: string;
+    currencyName: string;
+    currencySymbol: string;
+    solanaPrice: number;
+    solanaAmount: number;
+    tokenMarketCapInSolana: number;
+    tokenAmount: number;
+    tokenUnitPrice: number;
+    tokenTotalValue: number;
+    tokenMarketCap: number;
+    signature: string;
+    traderPublicKey: string;
+    txType: "buy" | "sell";
+    pool: string;
+}

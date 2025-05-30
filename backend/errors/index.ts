@@ -84,3 +84,10 @@ export class DatabaseOperationError extends ServiceError {
     this.name = 'DatabaseOperationError';
   }
 }
+
+export class WalletNotFoundError extends ServiceError {
+  constructor(message = 'Wallet not found') {
+    super(404, message);
+    this.name = 'WalletNotFoundError';
+  }
+}

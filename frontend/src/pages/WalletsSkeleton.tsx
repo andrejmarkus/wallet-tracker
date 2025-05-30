@@ -1,4 +1,4 @@
-const HomeSkeleton = () => {
+const WalletsSkeleton = () => {
   return (
     <div className="flex flex-col gap-4 py-4">
         { Array.from({ length: 16 }).map((_, index) => (
@@ -8,4 +8,4 @@ const HomeSkeleton = () => {
   )
 }
 
-export default HomeSkeleton
+export default WalletsSkeleton

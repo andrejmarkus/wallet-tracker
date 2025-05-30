@@ -1,8 +1,5 @@
 import WebSocket from 'ws';
-
-type PumpPortalAction =
-  | { type: 'subscribe'; userId: string; walletId: string }
-  | { type: 'unsubscribe'; userId: string; walletId: string };
+import prisma from '../database/prisma';
 
 interface PumpPortal {
   ws: WebSocket | null;
@@ -17,7 +14,6 @@ interface PumpPortal {
 }
 
 const walletSubscriptions = new Map<string, Set<string>>();
-const actionQueue: PumpPortalAction[] = [];
 
 const pumpPortal: PumpPortal = {
   ws: null,
@@ -33,8 +29,28 @@ const pumpPortal: PumpPortal = {
 
     this.ws = new WebSocket('wss://pumpportal.fun/api/data');
 
-    this.ws.on('open', () => {
+    this.ws.on('open', async () => {
       console.log('[PumpPortal] Connected to Pump Portal WebSocket');
+      
+      const wallets = await prisma.wallet.findMany({
+        select: {
+          address: true,
+          users: {
+            select: {
+              id: true,
+            },
+          },
+        },
+      });
+
+      wallets.forEach(wallet => {
+        const walletAddress = wallet.address;
+        const subscribers = new Set(wallet.users.map(user => user.id));
+        if (subscribers.size > 0) {
+          walletSubscriptions.set(walletAddress, subscribers);
+          console.log(`[PumpPortal] Subscribed to wallet ${walletAddress} with ${subscribers.size} users`);
+        }
+      });
 
       walletSubscriptions.forEach((subscribers, walletId) => {
         if (subscribers.size > 0) {
@@ -48,17 +64,6 @@ const pumpPortal: PumpPortal = {
           console.log(`[PumpPortal] Resubscribed to wallet ${walletId}`);
         }
       });
-
-      while (actionQueue.length > 0) {
-        const action = actionQueue.shift();
-        if (action) {
-          if (action.type === 'subscribe') {
-            this._doSubscribe(action.userId, action.walletId);
-          } else if (action.type === 'unsubscribe') {
-            this._doUnsubscribe(action.userId, action.walletId);
-          }
-        }
-      }
     });
   },
   onMessage(callback: (message: string) => void) {
@@ -73,7 +78,6 @@ const pumpPortal: PumpPortal = {
   subscribeWallet(userId: string, walletId: string) {
     if (!this.ws) this.init();
     if (!this.isOpen) {
-      actionQueue.push({ type: 'subscribe', userId, walletId });
       console.log(`[PumpPortal] Queued subscribe for wallet ${walletId}`);
       return;
     }
@@ -82,7 +86,6 @@ const pumpPortal: PumpPortal = {
   unsubscribeWallet(userId: string, walletId: string) {
     if (!this.ws) this.init();
     if (!this.isOpen) {
-      actionQueue.push({ type: 'unsubscribe', userId, walletId });
       console.log(`[PumpPortal] Queued unsubscribe for wallet ${walletId}`);
       return;
     }

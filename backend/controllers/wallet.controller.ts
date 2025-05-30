@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { getWallets, deleteWalletByAddress, getWalletsOfUser, createWallet } from "../services/wallet.service";
+import { getWallets, deleteWalletForUser, getWalletsOfUser, createWalletForUser } from "../services/wallet.service";
 import { InvalidRequestError, UserNotFoundError } from "../errors";
 import { walletSchema } from "../schemas";
 
@@ -17,7 +17,7 @@ export const wallets = async (req: Request, res: Response, next: NextFunction): 
     }
 }
 
-export const walletsOfAuthorizedUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const userWallets = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
         const userId = req.user?.id;
 
@@ -35,13 +35,18 @@ export const walletsOfAuthorizedUser = async (req: Request, res: Response, next:
     }
 }
 
-export const createNewWallet = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const createUserWallet = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+        const userId = req.user?.id;
+
+        if (!userId) throw new UserNotFoundError();
+
         const walletData = walletSchema.safeParse(req.body);
 
         if (!walletData.success) throw new InvalidRequestError();
 
-        const wallet = await createWallet(walletData.data.address);
+        const { address } = walletData.data;
+        const wallet = await createWalletForUser(address, userId);
 
         res.status(201).json({
             status: "success",
@@ -53,11 +58,14 @@ export const createNewWallet = async (req: Request, res: Response, next: NextFun
     }
 }
 
-export const deleteWallet = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const deleteUserWallet = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const { address } = req.params;
+        const userId = req.user?.id;
+        const address = req.params.address;
 
-        await deleteWalletByAddress(address);
+        if (!userId) throw new UserNotFoundError();
+        
+        await deleteWalletForUser(address, userId);
 
         res.status(200).json({
             status: "success",
