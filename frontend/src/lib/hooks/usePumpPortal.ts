@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 import type { Transaction } from "../../types";
 import { useAuth } from "../context/AuthContext";
+import api from "../api";
 
 let socket: Socket | null = null;
 
@@ -39,13 +40,25 @@ export function usePumpPortal(onMessage?: (transaction: Transaction) => void) {
             console.log("[WebSocket] Disconnected");
         });
 
-        socket.on("connect_error", (err) => {
-            console.error("[WebSocket] Connection error:", err);
+        socket.on("connect_error", async (err) => {
+            if (err.message === "Authentication error: Unauthorized") {
+                api
+                .post("/auth/refresh")
+                .then(() => {
+                    console.log("[WebSocket] Reconnected after token refresh");
+                    socket.connect();
+                })
+                .catch(() => {
+                    console.error("[WebSocket] Failed to refresh token, disconnecting");
+                    socket.disconnect();
+                });
+            } else {
+                console.error("[WebSocket] Connection error:", err);
+            }
         });
 
         socket.on("transactionUpdate", (transaction: Transaction) => {
             try {
-                console.log("[WebSocket] Transaction update received:", transaction);
                 onMessage?.(transaction);
             } catch (err) {
                 console.error("[WebSocket] Invalid message:", err);

@@ -23,3 +23,17 @@ export async function generateTelegramToken(userId: string): Promise<TelegramTok
     throw new DatabaseOperationError();
   }
 }
+
+export async function unlinkTelegram(userId: string): Promise<void> {
+  try {
+    await prisma.telegramLinkToken.deleteMany({
+      where: { userId },
+    });
+    await prisma.user.update({
+      where: { id: userId },
+      data: { telegramChatId: null },
+    });
+  } catch {
+    throw new DatabaseOperationError();
+  }
+}

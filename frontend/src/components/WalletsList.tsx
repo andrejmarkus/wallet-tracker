@@ -2,7 +2,6 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import api from "../lib/api";
 import type { WalletData } from "../types";
 import WalletItem from "./WalletItem";
-import { usePumpPortal } from "../lib/hooks/usePumpPortal";
 import { useAuth } from "../lib/context/AuthContext";
 
 const WalletsList = () => {
@@ -17,10 +16,6 @@ const WalletsList = () => {
             const response = await api.get('/wallets');
             return response.data.data.wallets as WalletData[];
         }
-    });
-    
-    usePumpPortal((transaction) => {
-        console.log("[WebSocket] Transaction update received:", transaction);
     });
 
   return (

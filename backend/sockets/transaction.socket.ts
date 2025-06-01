@@ -10,7 +10,6 @@ export default function transactionSocket(namespace: Namespace): void {
 
     pumpPortal.onMessage(async (message: string) => {
       if (socket.connected) {
-        if (!socket.user.telegramChatId) return;
         const data = JSON.parse(message.toString());
         const transaction = data as Transaction;
         if (!('signature' in transaction && 'traderPublicKey' in transaction && 'txType' in transaction)) {
@@ -25,17 +24,16 @@ export default function transactionSocket(namespace: Namespace): void {
           currencySymbol: 'USD',
         });
 
-        await transactionBot.api.sendMessage(
-          socket.user.telegramChatId,
-          `New transaction detected:\n` +
-            `Signature: ${transaction.signature}\n` +
-            `Trader: ${transaction.traderPublicKey}\n` +
-            `Type: ${transaction.txType}\n` +
-            `Pool: ${transaction.pool}\n` +
-            `Token: ${tokenDetails.tokenName} (${tokenDetails.tokenSymbol})\n` +
-            `Amount: ${tokenDetails.tokenAmount} (${tokenDetails.solanaAmount} SOL)\n` +
-            `Market Cap: ${tokenDetails.tokenMarketCap} ${tokenDetails.currencySymbol}`,
-        );
+        const telegramChatId = socket.user.telegramChatId;
+        if (telegramChatId) {
+          await transactionBot.api.sendMessage(
+            telegramChatId,
+            `<a href="https://pump.fun/coin/${transaction.mint}">${transaction.txType.toUpperCase()} ${tokenDetails.tokenSymbol}</a>\n\n` +
+            `${transaction.tokenAmount.toFixed(4)} ${tokenDetails.tokenSymbol} ${tokenDetails.tokenTotalValue.toFixed(2)} ${tokenDetails.currencySymbol} for ${tokenDetails.solanaAmount.toFixed(4)} SOL\n\n` +
+            `MarketCap: ${tokenDetails.tokenMarketCap.toFixed(2)} ${tokenDetails.currencySymbol}`,
+            { parse_mode: 'HTML' }
+          );
+        }
 
         socket.emit('transactionUpdate', {
           signature: transaction.signature,
