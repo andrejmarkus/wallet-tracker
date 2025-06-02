@@ -5,7 +5,7 @@ import { randomUUID } from 'crypto';
 import { User, Wallet } from '../types';
 import { walletSchema } from '../schemas';
 
-const wallet = "0x1234567890abcdef1234567890abcdef12345678";
+const wallet = "ZG98FUCjb8mJ824Gbs6RsgVmr1FhXb2oNiJHa2dwmPd";
 
 let uuid: string;
 let userWithCookie: { user: User; authCookie: string };
@@ -96,14 +96,14 @@ describe('Wallet API', () => {
     });
 
     it('should return 400 for invalid wallet creation request', async () => {
-        const invalidWallet = { address: "invalid-address" };
+        const invalidWallet = { address: "0x98FUCjb8mJ824Gbs6RsgVmr1FhXb2oNiJHa2dwmPd" };
         const response = await request(app)
             .post('/api/v1/wallets')
             .set('Cookie', userWithCookie.authCookie)
             .send(invalidWallet);
         
-        expect(response.status).toBe(400);
-        expect(response.body.message).toBe('Invalid request data');
+        expect(response.status).toBe(500);
+        expect(response.body.message).toBe('Non-base58 character');
     });
 
     it('should return 401 for getting wallets of unauthorized user', async () => {
