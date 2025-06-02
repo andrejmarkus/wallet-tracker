@@ -28,9 +28,7 @@ const RegisterForm = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 w-full max-w-md mx-auto">
-            <h2 className="text-3xl text-center font-bold">Register</h2>
-
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3 w-full max-w-md mx-auto">
             <fieldset className="fieldset w-full">
                 <legend className="fieldset-legend">Username</legend>
                 <input id="username" type="text" className="input w-full" {...register("username")} />
@@ -55,7 +53,7 @@ const RegisterForm = () => {
                 {errors.confirmPassword && <p className="label text-error">{errors.confirmPassword.message}</p>}
             </fieldset>
 
-            <button type="submit" className="btn btn-primary w-full">Register</button>
+            <button type="submit" className="btn btn-primary w-full mt-3">Register</button>
         </form>
     )
 }

@@ -53,7 +53,7 @@ const Transactions = () => {
   };
 
   return (
-    <div className='py-4 flex flex-col gap-4'>
+    <div className='container mx-auto py-4 flex flex-col gap-4'>
       <div>
         <p className='text-2xl font-bold'>Transactions</p>
         <div className='flex gap-4 items-center mt-4'>
