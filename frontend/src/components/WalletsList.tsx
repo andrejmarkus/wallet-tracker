@@ -13,7 +13,7 @@ const WalletsList = () => {
     const { data: wallets } = useSuspenseQuery<WalletData[]>({
         queryKey: ['wallets'],
         queryFn: async () => {
-            const response = await api.get('/wallets');
+            const response = await api.get('/wallets/authorized');
             return response.data.data.wallets as WalletData[];
         }
     });

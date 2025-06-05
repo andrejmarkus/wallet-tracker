@@ -8,7 +8,7 @@ let socket: Socket | null = null;
 
 function getSocket() {
     socket ??= io(`${import.meta.env.VITE_API_URL}transactions`, {
-        transports: ["websocket"]
+        transports: ["websocket"],
     });
 
     return socket;
@@ -31,6 +31,14 @@ export function usePumpPortal(onMessage?: (transaction: Transaction) => void) {
     useEffect(() => {
         const socket = getSocket();
         socketRef.current = socket;
+
+        if (socket.connected) {
+            console.log("[WebSocket] Already connected, skipping connection");
+            return;
+        } else {
+            console.log("[WebSocket] Connecting to Pump Portal");
+            socket.connect();
+        }
 
         socket.on("connect", () => {
             console.log("[WebSocket] Connected");
@@ -65,16 +73,12 @@ export function usePumpPortal(onMessage?: (transaction: Transaction) => void) {
             }
         });
 
-        if (!socket.connected) {
-            socket.connect();
-        }
-
         return () => {
             if (socket.connected) {
                 socket.disconnect();
             }
         };
-    }, [user, onMessage]);
+    }, [user]);
 
     return { subscribeWallet, unsubscribeWallet };
 }

@@ -25,7 +25,7 @@ declare interface RawTransaction {
   signature: string;
   mint: string;
   traderPublicKey: string;
-  txType: 'buy' | 'sell' | string;
+  txType: 'buy' | 'sell';
   tokenAmount: number;
   solAmount: number;
   newTokenBalance: number;
@@ -40,9 +40,28 @@ declare interface Transaction {
   signature: string;
   mint: string;
   traderPublicKey: string;
-  txType: 'buy' | 'sell' | string;
+  txType: 'buy' | 'sell';
   tokenAmount: number;
   solAmount: number;
   pool: string;
   marketCapSol: number;
+}
+
+declare interface FullTransaction {
+    tokenAddress: string;
+    tokenName: string;
+    tokenSymbol: string;
+    currencyName: string;
+    currencySymbol: string;
+    solanaPrice: number;
+    solanaAmount: number;
+    tokenMarketCapInSolana: number;
+    tokenAmount: number;
+    tokenUnitPrice: number;
+    tokenTotalValue: number;
+    tokenMarketCap: number;
+    signature: string;
+    traderPublicKey: string;
+    txType: "buy" | "sell";
+    pool: string;
 }

@@ -3,11 +3,14 @@ import http from 'http'
 import { ORIGIN_URL, PORT } from './config/env'
 import { Server } from 'socket.io'
 import registerSocketHandlers from './sockets'
-import transactionBot from './bots/transactionBot'
+import transactionBot, { initializeTransactionBot } from './bots/transactionBot'
 
 const server = http.createServer(app)
 
 const io = new Server(server, {
+  connectionStateRecovery: {
+    maxDisconnectionDuration: 60 * 1000, // 1 minute
+  },
   cors: {
     origin: ORIGIN_URL ?? true,
     methods: ['GET', 'POST'],
@@ -18,7 +21,8 @@ const io = new Server(server, {
 
 registerSocketHandlers(io)
 
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
   console.log(`Server is running on port ${PORT}`)
+  await initializeTransactionBot()
   transactionBot.start()
 })

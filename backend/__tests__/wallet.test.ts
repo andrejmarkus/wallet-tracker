@@ -102,8 +102,8 @@ describe('Wallet API', () => {
             .set('Cookie', userWithCookie.authCookie)
             .send(invalidWallet);
         
-        expect(response.status).toBe(500);
-        expect(response.body.message).toBe('Non-base58 character');
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe('Invalid request data');
     });
 
     it('should return 401 for getting wallets of unauthorized user', async () => {

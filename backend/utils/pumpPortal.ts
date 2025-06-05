@@ -1,12 +1,13 @@
 import WebSocket from 'ws';
 import prisma from '../database/prisma';
+import { Transaction } from '../types';
 
 interface PumpPortal {
   ws: WebSocket | null;
   get isOpen(): boolean;
   init: () => void;
   close: () => void;
-  onMessage: (callback: (message: string) => void) => void;
+  onMessage: (callback: (transaction: Transaction, telegramChatIds: string[]) => void) => void;
   subscribeWallet: (userId: string, walletId: string) => void;
   unsubscribeWallet: (userId: string, walletId: string) => void;
   _doSubscribe: (userId: string, walletId: string) => void;
@@ -66,13 +67,23 @@ const pumpPortal: PumpPortal = {
       });
     });
   },
-  onMessage(callback: (message: string) => void) {
+  onMessage(callback: (transaction: Transaction, telegramChatIds: string[]) => void) {
     if (!this.ws) this.init();
     if (!this.ws) return;
 
-    this.ws.on('message', (message: string) => {
+    this.ws.on('message', async (message: string) => {
       console.log(`[PumpPortal] Received message: ${message}`);
-      callback(message);
+      const data = JSON.parse(message.toString());
+      const tx = data as Transaction;
+
+      const userIds = walletSubscriptions.get(tx.traderPublicKey);
+      const users = await prisma.user.findMany({
+        where: { id: { in: [...userIds ?? []] } },
+        select: { telegramChatId: true }
+      });
+      const telegramChatIds = users.map(user => user.telegramChatId).filter((id): id is string => id !== null);
+
+      callback(tx, telegramChatIds);
     });
   },
   subscribeWallet(userId: string, walletId: string) {

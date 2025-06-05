@@ -16,7 +16,7 @@ const Transactions = () => {
     setTransactions(prev => 
       prev.some(t => t.signature === transaction.signature) 
       ? prev 
-      : [...prev, transaction]
+      : [transaction, ...prev]
     );
   });
 

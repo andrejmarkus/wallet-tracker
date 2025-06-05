@@ -11,31 +11,34 @@ export async function getTokenDetails({
   tokenMarketCapInSolana,
   tokenAmount,
   currencySymbol,
-}: TokenRequest): Promise<TokenDetails> {
+}: TokenRequest): Promise<TokenDetails | undefined> {
   const metaplex = Metaplex.make(connection);
   const tokenPublicKey = new PublicKey(tokenAddress);
 
-  const tokenDetails = await metaplex.nfts().findByMint({ mintAddress: tokenPublicKey });
+  try {
+    const tokenDetails = await metaplex.nfts().findByMint({ mintAddress: tokenPublicKey });
+    const paiPriceRequest = await fetch(
+      `https://api.coinbase.com/api/v3/brokerage/market/products/SOL-${currencySymbol}`,
+    );
+    if (!paiPriceRequest.ok) throw new FailedToFetchDataError();
 
-  const paiPriceRequest = await fetch(
-    `https://api.coinbase.com/api/v3/brokerage/market/products/SOL-${currencySymbol}`,
-  );
-  if (!paiPriceRequest.ok) throw new FailedToFetchDataError();
+    const { price, quote_name }: { price: number, quote_name: string } = await paiPriceRequest.json();
 
-  const { price, quote_name }: { price: number, quote_name: string } = await paiPriceRequest.json();
-
-  return {
-    tokenAddress,
-    tokenName: tokenDetails.name,
-    tokenSymbol: tokenDetails.symbol,
-    currencyName: quote_name,
-    currencySymbol,
-    solanaPrice: Number(price),
-    solanaAmount,
-    tokenMarketCapInSolana,
-    tokenAmount,
-    tokenUnitPrice: (solanaAmount / tokenAmount) * price,
-    tokenTotalValue: solanaAmount * price,
-    tokenMarketCap: tokenMarketCapInSolana * price,
-  };
+    return {
+      tokenAddress,
+      tokenName: tokenDetails.name,
+      tokenSymbol: tokenDetails.symbol,
+      currencyName: quote_name,
+      currencySymbol,
+      solanaPrice: Number(price),
+      solanaAmount,
+      tokenMarketCapInSolana,
+      tokenAmount,
+      tokenUnitPrice: (solanaAmount / tokenAmount) * price,
+      tokenTotalValue: solanaAmount * price,
+      tokenMarketCap: tokenMarketCapInSolana * price,
+    };
+  } catch (error) {
+    console.error(`Failed to fetch token details for ${tokenAddress}:`, error);
+  }
 }
