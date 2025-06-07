@@ -62,7 +62,7 @@ export default function transactionSocket(namespace: Namespace): void {
     });
 
     socket.on('ping', () => {
-      socket.emit('pong', { message: 'Pong!' });
+      namespace.emit('pong', { message: 'Pong!' });
     });
 
     socket.on(

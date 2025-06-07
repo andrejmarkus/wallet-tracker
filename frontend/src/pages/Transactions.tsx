@@ -1,24 +1,13 @@
-import { NavLink } from 'react-router-dom'
-import { usePumpPortal } from '../lib/hooks/usePumpPortal'
-import { useState } from 'react';
-import type { Transaction } from '../types';
+import { NavLink } from 'react-router-dom';
 import { LiaTelegram } from "react-icons/lia";
 import api from '../lib/api';
 import { useAuth } from '../lib/context/AuthContext';
 import { LuX } from "react-icons/lu";
 import { toast } from 'react-toastify';
+import TransactionsList from '../components/TransactionsList';
 
 const Transactions = () => {
   const { user, fetchUser } = useAuth();
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  
-  usePumpPortal((transaction: Transaction) => {
-    setTransactions(prev => 
-      prev.some(t => t.signature === transaction.signature) 
-      ? prev 
-      : [transaction, ...prev]
-    );
-  });
 
   const handleUnlinkTelegram = () => {
     if (!user?.telegramChatId) {
@@ -53,25 +42,45 @@ const Transactions = () => {
   };
 
   return (
-    <div className='container mx-auto py-4 flex flex-col gap-4'>
-      <div>
-        <p className='text-2xl font-bold'>Transactions</p>
-        <div className='flex gap-4 items-center mt-4'>
-          <NavLink to="/app/wallets" className="btn btn-primary">Add Solana wallets</NavLink>
-          { user?.telegramChatId ? (
-            <button className='btn btn-secondary' onClick={handleUnlinkTelegram}><LuX /> Unlink Telegram</button>
-          ) : ( 
-            <button className='btn btn-primary' onClick={handleConnectTelegram}><LiaTelegram /> Connect Telegram</button>
-          )}
+    <div className='min-h-screen bg-base-200'>
+      <div className='container mx-auto px-4 py-8'>
+        {/* Header Section */}
+        <div className="card bg-base-100 shadow-md mb-8">
+          <div className="card-body">
+            <h2 className="card-title text-3xl mb-4">Transactions</h2>
+            <div className='flex flex-wrap gap-4 items-center'>
+              <NavLink 
+                to="/app/wallets" 
+                className="btn btn-primary btn-md"
+              >
+                Add Solana wallets
+              </NavLink>
+              { user?.telegramChatId ? (
+                <button 
+                  className='btn btn-error btn-md' 
+                  onClick={handleUnlinkTelegram}
+                >
+                  <LuX className="w-5 h-5" /> 
+                  Unlink Telegram
+                </button>
+              ) : ( 
+                <button 
+                  className='btn btn-primary btn-md' 
+                  onClick={handleConnectTelegram}
+                >
+                  <LiaTelegram className="w-5 h-5" /> 
+                  Connect Telegram
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Transactions List */}
+        <div className="grid gap-4">
+          <TransactionsList />
         </div>
       </div>
-      { transactions.map((transaction) => (
-        <div key={transaction.signature} className="p-4 rounded base-100 shadow mb-2">
-          <h3 className="text-xl font-semibold">{transaction.traderPublicKey}</h3>
-          <span className="text-sm">{transaction.tokenAmount} </span>
-          <a className='text-sm link' href={`https://pump.fun/coin/${transaction.tokenAddress}`} target='_blank'>{transaction.tokenSymbol}</a>
-        </div>
-      ))}
     </div>
   )
 }
