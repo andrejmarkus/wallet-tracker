@@ -38,15 +38,15 @@ const pumpPortal: PumpPortal = {
           address: true,
           users: {
             select: {
-              id: true,
+              userId: true,
             },
-          },
+          }
         },
       });
 
       wallets.forEach(wallet => {
         const walletAddress = wallet.address;
-        const subscribers = new Set(wallet.users.map(user => user.id));
+        const subscribers = new Set(wallet.users.map(user => user.userId));
         if (subscribers.size > 0) {
           walletSubscriptions.set(walletAddress, subscribers);
           console.log(`[PumpPortal] Subscribed to wallet ${walletAddress} with ${subscribers.size} users`);

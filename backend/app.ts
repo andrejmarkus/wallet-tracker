@@ -11,7 +11,7 @@ import userRouter from './routes/user.routes'
 import authRouter from './routes/auth.routes'
 import tokenRouter from './routes/token.routes'
 import telegramRouter from './routes/telegram.routes'
-import walletRouter from './routes/wallet.controller'
+import walletRouter from './routes/wallet.routes'
 
 const app = express()
 

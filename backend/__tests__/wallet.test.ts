@@ -32,6 +32,16 @@ describe('Wallet API', () => {
         expect(result.success).toBe(true);
     });
 
+    it('should update a wallet name of authorized user', async () => {
+        const updatedWalletName = { name: "Updated Wallet" };
+        const response = await request(app)
+            .patch(`/api/v1/wallets/${wallet}`)
+            .set('Cookie', userWithCookie.authCookie)
+            .send(updatedWalletName);
+        
+        expect(response.status).toBe(200);
+    });
+
     it('should get all wallets', async () => {
         const response = await request(app)
             .get('/api/v1/wallets')

@@ -1,6 +1,8 @@
 import { LuExternalLink } from 'react-icons/lu'
 import { FiArrowUpRight, FiArrowDownRight } from 'react-icons/fi'
 import type { Transaction } from '../types'
+import api from '../lib/api'
+import { useQuery } from '@tanstack/react-query'
 
 const TransactionItem = (transaction: Transaction) => {
   const isBuy = transaction.txType === 'buy'
@@ -17,6 +19,19 @@ const TransactionItem = (transaction: Transaction) => {
     style: 'currency',
     currency: 'USD',
   }).format(transaction.tokenMarketCap || 0)
+
+  const truncateAddress = (addr: string) => {
+    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+  };
+
+  const { data: name } = useQuery({
+    queryKey: ['wallets', transaction.traderPublicKey],
+    queryFn: async () => {
+      const response = await api.get(`/wallets/authorized/${transaction.traderPublicKey}`);
+      console.log(response.data);
+      return response.data.data.wallet.name as string | null;
+    }
+  });
 
   return (
     <div className={`card bg-base-100 shadow-md hover:shadow-lg transition-shadow duration-200 border-l-4 ${
@@ -36,7 +51,7 @@ const TransactionItem = (transaction: Transaction) => {
             </div>
             
             <div className="text-sm opacity-70">
-              by <span className="font-mono">{transaction.traderPublicKey.slice(0, 8)}...{transaction.traderPublicKey.slice(-8)}</span>
+              by <span className="font-mono">{ name ?? truncateAddress(transaction.traderPublicKey) }</span>
             </div>
 
             <div className="flex flex-col gap-1">

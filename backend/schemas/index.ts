@@ -3,7 +3,7 @@ import { z } from 'zod'
 export { userLoginSchema, userRegisterSchema } from './auth.schemas'
 export { tokenRequestSchema, tokenDetailsSchema } from './token.schemas'
 export { telegramTokenSchema } from './telegram.schemas'
-export { walletSchema } from './wallet.schemas'
+export { walletSchema, walletUpdateSchema } from './wallet.schemas'
 
 export const userSchema = z.object({
   id: z.string().cuid('Invalid user ID format'),

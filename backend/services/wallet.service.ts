@@ -8,7 +8,7 @@ export async function getWallets(): Promise<Wallet[]> {
             select: {
                 address: true,
             }
-        })
+        });
 
         return wallets;
     } catch {
@@ -21,93 +21,190 @@ export async function getWalletsOfUser(userId: string): Promise<Wallet[]> {
         const wallets = await prisma.wallet.findMany({
             where: {
                 users: {
-                    some: { id: userId }
+                    some: {
+                        userId
+                    }
                 }
             },
             select: {
                 address: true,
+                users: {
+                    where: {
+                        userId
+                    },
+                    select: {
+                        name: true
+                    }
+                }
             }
         });
 
-        return wallets;
+        return wallets.map(wallet => ({
+            address: wallet.address,
+            name: wallet.users[0]?.name
+        }));
     } catch {
         throw new DatabaseOperationError();
     }
 }
 
-export async function createWalletForUser(address: string, userId: string): Promise<Wallet> {
+export async function getWalletOfUserByAddress(address: string, userId: string): Promise<Wallet | null> {
     try {
-        const existingWallet = await prisma.wallet.findUnique({
-            where: { address }
-        });
-
-        if (existingWallet) {
-            await prisma.wallet.update({
-                where: { address },
-                data: {
-                    users: {
-                        connect: { id: userId }
+        const wallet = await prisma.wallet.findUnique({
+            where: { address },
+            include: {
+                users: {
+                    where: {
+                        userId
                     }
                 }
-            });
-
-            return existingWallet;
-        }
-
-        const wallet = await prisma.wallet.create({
-            data: {
-                address,
-                users: {
-                    connect: { id: userId }
-                }
-            },
-            select: {
-                address: true,
             }
         });
 
-        return wallet;
+        if (!wallet || wallet.users.length === 0) {
+            return null;
+        }
+
+        return {
+            address: wallet.address,
+            name: wallet.users[0].name
+        };
     } catch {
+        throw new DatabaseOperationError();
+    }
+}
+
+export async function createWalletForUser(address: string, userId: string, walletName?: string | null): Promise<Wallet> {
+    try {
+        const existingWallet = await prisma.wallet.findUnique({
+            where: { address },
+            include: {
+                users: {
+                    where: {
+                        userId
+                    }
+                }
+            }
+        });
+
+        if (existingWallet) {
+            if (existingWallet.users.length === 0) {
+                await prisma.userWallet.create({
+                    data: {
+                        userId,
+                        walletId: address,
+                        name: walletName
+                    }
+                });
+            } else {
+                await prisma.userWallet.update({
+                    where: {
+                        userId_walletId: {
+                            userId,
+                            walletId: address
+                        }
+                    },
+                    data: {
+                        name: walletName
+                    }
+                });
+            }
+
+            return {
+                address: existingWallet.address,
+                name: walletName
+            };
+        }
+
+        await prisma.wallet.create({
+            data: {
+                address,
+                users: {
+                    create: {
+                        userId,
+                        name: walletName
+                    }
+                }
+            }
+        });
+
+        return {
+            address,
+            name: walletName
+        };
+    } catch {
+        throw new DatabaseOperationError();
+    }
+}
+
+export async function updateWalletNameForUser(address: string, userId: string, newName?: string | null): Promise<void> {
+    try {
+        const wallet = await prisma.wallet.findUnique({
+            where: { address },
+            include: {
+                users: true
+            }
+        });
+
+        if (!wallet) {
+            throw new WalletNotFoundError();
+        }
+
+        const userWallet = wallet.users.find(user => user.userId === userId);
+        if (!userWallet) {
+            throw new WalletNotFoundError();
+        }
+
+        await prisma.userWallet.update({
+            where: {
+                userId_walletId: {
+                    userId,
+                    walletId: address
+                }
+            },
+            data: {
+                name: newName
+            }
+        });
+    } catch (error) {
+        if (error instanceof WalletNotFoundError) {
+            throw error;
+        }
         throw new DatabaseOperationError();
     }
 }
 
 export async function deleteWalletForUser(address: string, userId: string): Promise<void> {
-    let wallet;
-
     try {
-        wallet = await prisma.wallet.findUnique({
+        const wallet = await prisma.wallet.findUnique({
             where: { address },
-            select: {
-                users: {
-                    select: { id: true }
-                }
+            include: {
+                users: true
             }
         });
-    } catch {
-        throw new DatabaseOperationError();
-    }
 
-    if (!wallet) {
-        throw new WalletNotFoundError();
-    }
+        if (!wallet) {
+            throw new WalletNotFoundError();
+        }
 
-    try {
-        if (wallet.users.length === 1 && wallet.users[0].id === userId) {
+        if (wallet.users.length === 1 && wallet.users[0].userId === userId) {
             await prisma.wallet.delete({
                 where: { address }
             });
         } else {
-            await prisma.wallet.update({
-                where: { address },
-                data: {
-                    users: {
-                        disconnect: { id: userId }
+            await prisma.userWallet.delete({
+                where: {
+                    userId_walletId: {
+                        userId,
+                        walletId: address
                     }
                 }
             });
         }
-    } catch {
+    } catch (error) {
+        if (error instanceof WalletNotFoundError) {
+            throw error;
+        }
         throw new DatabaseOperationError();
     }
 }

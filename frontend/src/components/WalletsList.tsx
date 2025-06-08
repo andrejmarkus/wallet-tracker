@@ -23,7 +23,7 @@ const WalletsList = () => {
         { wallets?.length === 0 ? (
             <p className="text-center text-gray-500">No wallets found. Please add a wallet.</p>
         ) : wallets?.map(wallet => (
-            <WalletItem key={wallet.address} address={wallet.address} />
+            <WalletItem key={wallet.address} address={wallet.address} name={wallet.name} />
         )
         )}
     </>
