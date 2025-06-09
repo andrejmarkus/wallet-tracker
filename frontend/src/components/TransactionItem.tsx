@@ -24,6 +24,8 @@ const TransactionItem = (transaction: Transaction) => {
     return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
   };
 
+  // TODO: Cache this query for a short time
+  // to avoid hitting the API too often
   const { data: name } = useQuery({
     queryKey: ['wallets', transaction.traderPublicKey],
     queryFn: async () => {
