@@ -1,0 +1,59 @@
+services:
+  wallettracker-traefik:
+    image: traefik:v3.4.3
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    restart: always
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    labels:
+      - "traefik.enable=true"
+
+  wallettracker-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.development
+    env_file:
+      - ./backend/.env.development
+    ports:
+      - "3001:3000"
+    restart: always
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - /app/__tests__
+    depends_on:
+      - wallettracker-db
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.wallettracker-api.rule=Host(`wallettracker-api.local`)"
+
+  wallettracker-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.development
+    env_file:
+      - ./frontend/.env.development
+    ports:
+      - "3000:3000"
+    restart: always
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - wallettracker-api
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.wallettracker-frontend.rule=Host(`wallettracker-frontend.local`)"
+
+  wallettracker-db:
+    image: postgres:latest
+
+volumes:
+  db-data:

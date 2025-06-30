@@ -1,0 +1,52 @@
+# Use the official Node.js 22 image
+FROM node:22-alpine AS base
+
+# Set working directory
+WORKDIR /app
+
+# Install pnpm globally
+RUN npm install -g pnpm
+
+# Copy package.json and pnpm-lock.yaml files
+COPY package.json pnpm-lock.yaml ./
+
+# Install dependencies
+RUN pnpm install && \
+    pnpm install --frozen-lockfile
+
+# Copy source code
+COPY . .
+
+# Generate Prisma client
+RUN pnpm prisma:generate
+
+# Build the application
+RUN pnpm build
+
+# Production stage
+FROM node:22-alpine AS production
+
+# Set working directory
+WORKDIR /app
+
+# Install pnpm globally
+RUN npm install -g pnpm
+
+# Copy package.json and pnpm-lock.yaml files
+COPY package.json pnpm-lock.yaml ./
+
+# Install dependencies
+RUN pnpm install && \
+    pnpm install --frozen-lockfile --prod
+
+# Copy built application from base stage
+COPY --from=base /app/dist ./dist
+
+# Copy generated Prisma client from base stage
+COPY --from=base /app/generated ./dist/generated
+
+# Expose the port the app runs on
+EXPOSE 3000
+
+# Define the command to run the application
+CMD ["node", "dist/server.js"]

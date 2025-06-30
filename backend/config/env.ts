@@ -1,7 +1,7 @@
 import { config } from 'dotenv';
 import ms from 'ms';
 
-config({ path: '.env' });
+config({ path: `.env.${process.env.NODE_ENV}`, debug: process.env.NODE_ENV === 'development' });
 
 interface EnvVariables {
   PORT: number;

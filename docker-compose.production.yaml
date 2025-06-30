@@ -1,0 +1,64 @@
+services:
+  wallettracker-traefik:
+    image: traefik:v3.4.3
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.email=${EMAIL}"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - "./letsencrypt:/letsencrypt"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.wallettracker-traefik.rule=Host(`traefik.${DOMAIN}`)"
+      - "traefik.http.routers.wallettracker-traefik.entrypoints=websecure"
+      - "traefik.http.routers.wallettracker-traefik.service=api@internal"
+      - "traefik.http.routers.wallettracker-traefik.tls.certresolver=myresolver"
+      - "traefik.http.routers.wallettracker-traefik.middlewares=traefik-auth"
+      - "traefik.http.middlewares.traefik-auth.basicauth.users=${USERNAME}:${PASSWORD}"
+  
+  wallettracker-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.production
+    env_file:
+      - ./backend/.env.production
+    ports:
+      - "3001:3000"
+    depends_on:
+      - wallettracker-db
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.wallettracker-api.rule=Host(`api.${DOMAIN}`)"
+      - "traefik.http.routers.wallettracker-api.entrypoints=websecure"
+      - "traefik.http.routers.wallettracker-api.tls.certresolver=myresolver"
+
+  wallettracker-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.production
+    env_file:
+      - ./frontend/.env.production
+    ports:
+      - "3000:3000"
+    depends_on:
+      - wallettracker-api
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.wallettracker-frontend.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.wallettracker-frontend.entrypoints=websecure"
+      - "traefik.http.routers.wallettracker-frontend.tls.certresolver=myresolver"
+
+  wallettracker-db:
+    image: postgres:latest
+
+volumes:
+  db-data:

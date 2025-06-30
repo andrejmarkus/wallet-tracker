@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import api from '../lib/api'
 import { toast } from 'react-toastify';
 import { useAuth } from '../lib/context/AuthContext';
-import { LogOut, User } from 'lucide-react';
+import { LuLogOut, LuUser } from 'react-icons/lu';
 
 const AvatarDropdownMenu = () => {
     const { setUser } = useAuth();
@@ -22,11 +22,11 @@ const AvatarDropdownMenu = () => {
     return (
         <li>
             <NavLink to={"/profile"}>
-                <User />
+                <LuUser />
                 Profile
             </NavLink>
             <button onClick={handleLogout}>
-                <LogOut />
+                <LuLogOut />
                 Logout
             </button>
         </li>
