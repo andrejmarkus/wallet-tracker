@@ -1,97 +1,159 @@
-# Wallet Tracker 🚀
+# 🚀 Wallet Tracker | Solana Transaction Monitor
 
-A real-time Solana wallet transaction tracking application.
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D20.x-green.svg)](https://nodejs.org/)
+[![React](https://img.shields.io/badge/React-19-blue.svg)](https://react.dev/)
+[![Prisma](https://img.shields.io/badge/Prisma-6.9-2D3748.svg)](https://www.prisma.io/)
+[![Solana](https://img.shields.io/badge/Solana-Web3.js-14F195.svg)](https://solana.com/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](https://www.docker.com/)
 
-## ✨ Portfolio Highlights
+**Wallet Tracker** is a state-of-the-art, real-time Solana wallet transaction tracking application. Designed for speed and precision, it monitors [pump.fun](https://pump.fun) trading activity, allowing users to follow successful wallets and receive instant notifications via WebSockets and Telegram.
 
-This project demonstrates several advanced software engineering practices:
+---
 
-### 🏗️ Backend Architecture
+## ✨ Engineering Highlights
 
-- **Repository Pattern**: Decoupled business logic from database operations using Prisma for enhanced testability and flexibility.
-- **Dependency Injection**: Constructor-based injection for services and repositories to ensure loose coupling.
-- **Structured Logging**: Implemented with Winston for production-grade observability.
-- **Standardized API Responses**: Centralized response utility for consistent JSON envelopes (Status, Data, Error, Timestamp).
-- **API Documentation**: Interactive Swagger/OpenAPI documentation at `/api-docs`.
-- **Global Validation**: Centralized request validation using Zod and a custom middleware factory.
+This production-ready application showcases advanced software architecture and modern development practices:
 
-### 🎨 Frontend Excellence
+### 🏗️ Backend Excellence
 
-- **Feature-Sliced Design (FSD)**: Organized codebase around business domains (e.g., `features/auth`, `features/wallets`) instead of técnico-technical layers.
-- **Custom Hooks for Data Fetching**: Abstracted API logic into TanStack Query hooks for pure UI components and efficient caching.
+- **Repository Pattern**: Clean decoupling of business logic from data access, ensuring highly testable and maintainable code.
+- **Real-time Pipeline**: High-performance transaction streaming using **Socket.io** and optimized event loops.
+- **Robust Security**: Multi-layered security with **Passport.js (JWT)**, **Helmet**, and strictly validated request schemas via **Zod**.
+- **Observability**: Centralized logging with **Winston** for deep insight into application health.
+- **Interactive Documentation**: Full **OpenAPI/Swagger** suite with live testing capabilities.
 
-### 🛠️ DevOps & CI/CD
+### 🎨 Frontend Mastery
 
-- **GitHub Actions**: Automated CI pipeline for linting and unit testing on every push and pull request.
-- **Dockerized Environment**: Full development and production Docker Compose setups for easy reproduction and deployment.
+- **Feature-Sliced Design (FSD)**: A modular architectural pattern that scales linearly with project complexity.
+- **Responsive UI**: Built with **React 19**, **Tailwind CSS**, and **DaisyUI** for a sleek, dark-themed dashboard.
+- **State Management**: Zero-boilerplate data fetching and caching with **TanStack Query (v5)**.
+- **Smooth UX**: Fluid interactions powered by **Framer Motion**.
 
-## Overview
+---
 
-...
+## 🚀 Key Features
 
-Wallet Tracker helps you monitor memecoin trading activity of Solana wallets by tracking their transactions on pump.fun. By following successful traders, you can make more informed decisions about which memecoins to invest in.
+- 🔍 **Limitless Tracking**: Monitor any Solana wallet address with zero overhead.
+- ⚡ **Real-time Stream**: Experience sub-second transaction updates via WebSocket.
+- 🤖 **Telegram Integration**: Connect your account to a dedicated bot for on-the-go alerts.
+- 📊 **Rich Context**: Detailed transaction data including Token Symbol, Type (Buy/Sell), USD Value, and Market Cap.
+- 🏷️ **Smart Organization**: Assign custom aliases to wallets for easier tracking.
 
-### Key Features
+---
 
-- Track any Solana wallet address without limitations
-- Real-time transaction updates via WebSocket connection
-- Optional Telegram notifications via bot integration
-- Custom wallet names for better organization
-- View transaction details including:
-  - Token name and symbol
-  - Transaction type (buy/sell)
-  - Amount and value
-  - Market cap
+## 🛠️ Tech Stack
 
-## Tech Stack
+| Domain             | Technology                                                        |
+| :----------------- | :---------------------------------------------------------------- |
+| **Frontend**       | React 19, TypeScript, Vite, Tailwind CSS, DaisyUI, TanStack Query |
+| **Backend**        | Node.js, Express, Socket.io, Passport.js, Zod, Winston            |
+| **Database**       | PostgreSQL, Prisma ORM                                            |
+| **Blockchain**     | @solana/web3.js, Metaplex                                         |
+| **Messaging**      | Grammy (Telegram Bot Framework)                                   |
+| **Infrastructure** | Docker, Docker Compose, Traefik (Edge Router)                     |
 
-### Backend
+---
 
-- Node.js
-- Express
-- PostgreSQL
-- Prisma ORM
-- Socket.IO for real-time updates
-- Grammy for Telegram bot
+## 📐 System Architecture
 
-### Frontend
-
-- React
-- TypeScript
-- TailwindCSS
-- Tanstack Query for data fetching
-- Socket.IO client
-
-## Getting Started
-
-1. Clone the repository
-2. Install dependencies in both frontend and backend directories:
-
-```sh
-cd frontend && pnpm install
-cd ../backend && pnpm install
-
-cd backend && pnpm prisma:migrate:dev
-
-# Backend
-cd backend && pnpm dev
-
-# Frontend
-cd frontend && pnpm dev
+```mermaid
+graph LR
+    User([User]) <--> Frontend[React Dashboard]
+    Frontend <--> |WebSockets / REST| Backend[Express Server]
+    Backend <--> DB[(PostgreSQL)]
+    Backend <--> |Poll/Subscribe| Solana[Solana RPC / PumpPortal]
+    Backend --> |Notify| TG[Telegram API]
 ```
 
-### 🐳 Docker Development (Recommended)
+---
 
-The easiest way to run the entire stack is using Docker Compose:
+## 🏁 Getting Started
 
-```sh
-# Start everything
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) (v20 or higher)
+- [pnpm](https://pnpm.io/) (Recommended)
+- [Docker](https://www.docker.com/) & [Docker Compose](https://docs.docker.com/compose/)
+
+### 🐳 Quick Start (Docker)
+
+The fastest way to get up and running is using our optimized Docker setup:
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/wallet-tracker.git
+cd wallet-tracker
+
+# Start the development cluster
 docker compose -f docker-compose.development.yaml up --build
 ```
 
-- **Frontend**: [app.localhost](http://app.localhost) or [localhost](http://localhost)
-- **Backend API**: [api.localhost](http://api.localhost)
-- **API Docs**: [api.localhost/api-docs](http://api.localhost/api-docs)
-- **Traefik Dashboard**: [localhost:8080](http://localhost:8080)
+- **Frontend**: [http://app.localhost](http://app.localhost)
+- **API Docs**: [http://api.localhost/api-docs](http://api.localhost/api-docs)
 
-> **Note**: Modern browsers (Chrome/Firefox) typically resolve `*.localhost` to `127.0.0.1` automatically. If they don't work for you, adding them to your `hosts` file is recommended.
+### 💻 Manual Setup
+
+1. **Install Dependencies**:
+
+   ```bash
+   pnpm install
+   ```
+
+2. **Configure Environment**:
+   Copy the example environment files and fill in your secrets.
+
+   ```bash
+   cp backend/.env.example backend/.env.development
+   ```
+
+3. **Database Migration**:
+
+   ```bash
+   cd backend && pnpm prisma:migrate:dev
+   ```
+
+4. **Launch Application**:
+
+   ```bash
+   # Run Backend
+   cd backend && pnpm dev
+
+   # Run Frontend (New Terminal)
+   cd frontend && pnpm dev
+   ```
+
+---
+
+## ⚙️ Configuration
+
+| Variable             | Description                  | Default |
+| :------------------- | :--------------------------- | :------ |
+| `PORT`               | API Port                     | `3001`  |
+| `DATABASE_URL`       | PostgreSQL Connection String | -       |
+| `JWT_SECRET`         | Secret for Access Tokens     | -       |
+| `TELEGRAM_BOT_TOKEN` | Token from @BotFather        | -       |
+
+---
+
+## 🧪 Testing
+
+The project maintains high standards through comprehensive testing suites.
+
+```bash
+cd backend
+pnpm test          # Run all tests
+pnpm test:watch    # TDD mode
+```
+
+---
+
+## 📄 License
+
+This project is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**.
+
+The AGPL is a strong copyleft license specifically designed for network server software. It ensures that if you run a modified version of this software as a service, your users have the right to receive the source code of that modified version.
+
+See the [LICENSE](LICENSE) file for the full license text.
+
+Developed with ❤️ for the Solana Community.

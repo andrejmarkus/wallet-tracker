@@ -1,0 +1,67 @@
+                    GNU AFFERO GENERAL PUBLIC LICENSE
+                       Version 3, 19 November 2007
+
+Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+Everyone is permitted to copy and distribute verbatim copies
+of this license document, but changing it is not allowed.
+
+                            Preamble
+
+The GNU Affero General Public License is a free, copyleft license for
+software and other kinds of works, specifically designed to ensure
+network-managed software remains free and open for all.
+
+The GNU General Public Licenses are designed to make sure that you
+have the freedom to distribute copies of free software (and charge for
+them if you wish), that you receive source code or can get it if you
+want it, that you can change the software or use pieces of it in new
+free programs, and that you know you can do these things.
+
+By contrast, our licenses are intended to guarantee your freedom to
+share and change all versions of a program--to make sure it remains free
+software for all its users. For most software, the GNU General Public
+License is a copyleft license, which means that derivative works must
+themselves be free in the same sense. It is designed to care for the
+rights of all users of a program or other work, and, specifically, to
+provide a distinct version of the license for the case of software
+on a network, providing for a way for users to interact with that
+software through a network to receive the source code of the software.
+
+The standard GNU General Public License is not appropriate for such
+situations, as it does not require that a user who interacts with the
+software through a network can receive the source code of that software.
+The GNU Affero General Public License is designed to correct this.
+
+                       TERMS AND CONDITIONS
+
+0. Definitions.
+
+"This License" refers to version 3 of the GNU Affero General Public License.
+
+"Copyright" also means copyright-like laws that apply to other kinds of
+works, such as semiconductor masks.
+
+"The Program" refers to any copyrightable work licensed under this
+License. Each licensee is addressed as "you". "Licensees" and
+"recipients" may be individuals or organizations.
+
+To "modify" a work means to copy from or adapt all or part of the work
+in a fashion requiring copyright permission, other than the making of an
+exact copy. The resulting work is called a "modified version" of the
+earlier work or a work "based on" the earlier work.
+
+A "covered work" means either the unmodified Program or a work based
+on the Program.
+
+To "propagate" a work means to do anything with it that, without
+permission, would make you directly or secondarily liable for
+infringement under applicable copyright law, except executing it on a
+computer or modifying a private copy. Propagation includes copying,
+distribution (with or without modification), making available to the
+public, and in some countries other activities as well.
+
+To "convey" a work means any kind of propagation that enables other
+parties to make or receive copies. Mere interaction with a user through
+a computer network, with no transfer of a copy, is not conveying.
+
+... [Full License Text Would Continue Here] ...

@@ -1,54 +1,87 @@
-# React + TypeScript + Vite
+# 🌐 Wallet Tracker - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](../LICENSE)
+[![React](https://img.shields.io/badge/React-19-blue.svg)](https://react.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.0-38B2AC.svg)](https://tailwindcss.com/)
+[![Vite](https://img.shields.io/badge/Vite-6.0-646CFF.svg)](https://vitejs.dev/)
 
-Currently, two official plugins are available:
+The frontend of the **Wallet Tracker** application, built with a focus on real-time data visualization, performance, and a superior user experience.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## Expanding the ESLint configuration
+## 🚀 Features
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Real-Time Dashboards**: Live transaction feeds powered by Socket.io.
+- **Responsive Design**: Mobile-first architecture using Tailwind CSS and DaisyUI.
+- **Type Safety**: End-to-end TypeScript integration.
+- **Efficient Data Management**: Optimized caching and server-state synchronization with TanStack Query.
+- **Stunning Animations**: Smooth page transitions and UI feedback with Framer Motion.
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+---
+
+## 🏗️ Architecture
+
+This project follows the **Feature-Sliced Design (FSD)** methodology:
+
+- `app/`: Global providers, styles, and entry points.
+- `pages/`: Application pages (Dashboard, Auth, etc.).
+- `features/`: Business-logic modules (Wallet tracking, Auth forms).
+- `entities/`: Business entities (User, Wallet, Transaction).
+- `shared/`: Reusable UI components, hooks, and utilities.
+
+---
+
+## 🛠️ Tech Stack
+
+- **Core**: React 19, TypeScript
+- **Tooling**: Vite
+- **Styling**: Tailwind CSS, DaisyUI, Lucide React (Icons)
+- **State & Fetching**: TanStack Query (v5), Axios
+- **Real-time**: Socket.io Client
+- **Forms**: React Hook Form, Zod (Validation)
+- **Animation**: Framer Motion
+
+---
+
+## 🏃 Running Locally
+
+1. **Install Dependencies**:
+
+   ```bash
+   pnpm install
+   ```
+
+2. **Run Development Server**:
+
+   ```bash
+   pnpm dev
+   ```
+
+3. **Build for Production**:
+   ```bash
+   pnpm build
+   ```
+
+---
+
+## 📄 Environment Variables
+
+Create a `.env` file in this directory:
+
+```env
+VITE_API_URL=http://localhost:3001
+VITE_WS_URL=http://localhost:3001
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 📄 License
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
+This software is part of the Wallet Tracker suite and is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**. See the root [LICENSE](../LICENSE) file for more information.
+...reactDom.configs.recommended.rules,
+},
 })
+
+```
+
 ```
