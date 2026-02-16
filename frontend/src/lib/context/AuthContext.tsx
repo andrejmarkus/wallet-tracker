@@ -24,18 +24,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchUser = async () => {
     setIsLoading(true);
-    api
-    .get('/users/authorized')
-    .then((res) => {
+    try {
+      const res = await api.get('/users/authorized');
       const user = res.data.data.user as User;
       setUser(user);
-    })
-    .catch(() => {
+    } catch {
       setUser(null);
-    })
-    .finally(() => {
+    } finally {
       setIsLoading(false);
-    });
+    }
   };
 
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { randomUUID } from 'crypto';
+import { randomUUID } from 'node:crypto';
 import { DatabaseOperationError } from '../errors';
 import { TelegramToken } from '../types';
 import telegramRepository from '../repositories/telegram.repository';

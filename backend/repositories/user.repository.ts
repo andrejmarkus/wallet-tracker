@@ -3,7 +3,7 @@ import { PrismaClient, User as PrismaUser } from '../generated/prisma';
 import { IBaseRepository } from './base.repository';
 
 export class UserRepository implements IBaseRepository<PrismaUser> {
-  private prisma: PrismaClient;
+  private readonly prisma: PrismaClient;
 
   constructor() {
     this.prisma = prisma;

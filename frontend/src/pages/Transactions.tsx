@@ -2,10 +2,11 @@ import { NavLink } from 'react-router-dom';
 import { LiaTelegram } from "react-icons/lia";
 import api from '../lib/api';
 import { useAuth } from '../lib/context/AuthContext';
-import { LuX } from "react-icons/lu";
+import { LuPlus, LuBell } from "react-icons/lu";
 import { toast } from 'react-toastify';
 import TransactionsList from '../features/transactions/components/TransactionsList';
 import PageTransition from '../components/common/PageTransition';
+import { motion } from 'framer-motion';
 
 const Transactions = () => {
   const { user, fetchUser } = useAuth();
@@ -44,46 +45,98 @@ const Transactions = () => {
 
   return (
     <PageTransition>
-      <div className='min-h-screen bg-base-200'>
-        <div className='container mx-auto px-4 py-8'>
-          {/* Header Section */}
-          <div className="card bg-base-100 shadow-md mb-8">
-            <div className="card-body">
-              <h2 className="card-title text-3xl mb-4">Transactions</h2>
-            <div className='flex flex-wrap gap-4 items-center'>
+      <div className='min-h-screen bg-base-200/50 pb-20'>
+        <div className='container mx-auto px-4 py-12 max-w-5xl'>
+          
+          {/* Dashboard Header */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
+            <div>
+              <motion.h1 
+                initial={{ x: -20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                className="text-5xl font-black tracking-tight mb-2"
+              >
+                Live Feed
+              </motion.h1>
+              <motion.p 
+                initial={{ x: -20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: 0.1 }}
+                className="text-base-content/60 text-lg"
+              >
+                Real-time transaction activity from your tracked wallets.
+              </motion.p>
+            </div>
+
+            <motion.div 
+               initial={{ x: 20, opacity: 0 }}
+               animate={{ x: 0, opacity: 1 }}
+               className='flex gap-3'
+            >
               <NavLink 
                 to="/app/wallets" 
-                className="btn btn-primary btn-md"
+                className="btn btn-primary shadow-lg shadow-primary/20 gap-2"
               >
-                Add Solana wallets
+                <LuPlus size={20} /> Add Wallets
               </NavLink>
+              
               { user?.telegramChatId ? (
                 <button 
-                  className='btn btn-error btn-md' 
+                  className='btn btn-ghost border-base-content/10 gap-2' 
                   onClick={handleUnlinkTelegram}
                 >
-                  <LuX className="w-5 h-5" /> 
-                  Unlink Telegram
+                  <LuBell className="text-success" /> 
+                  Connected
                 </button>
               ) : ( 
                 <button 
-                  className='btn btn-primary btn-md' 
+                  className='btn btn-neutral gap-2' 
                   onClick={handleConnectTelegram}
                 >
-                  <LiaTelegram className="w-5 h-5" /> 
-                  Connect Telegram
+                  <LiaTelegram className="w-5 h-5 text-sky-400" /> 
+                  Alerts
                 </button>
               )}
+            </motion.div>
+          </div>
+
+          {/* Stats Bar (Optional visual) */}
+          <motion.div 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="stats shadow-xl w-full bg-base-100 mb-10 border border-base-content/5"
+          >
+            <div className="stat">
+              <div className="stat-title">Tracked Wallets</div>
+              <div className="stat-value text-primary italic">Active</div>
+              <div className="stat-desc text-success">Monitoring 24/7</div>
             </div>
+            <div className="stat">
+              <div className="stat-title">Market Pulse</div>
+              <div className="stat-value text-secondary">Solana</div>
+              <div className="stat-desc">Mainnet-Beta</div>
+            </div>
+            <div className="stat">
+              <div className="stat-title">Sync Status</div>
+              <div className="stat-value text-success flex items-center gap-2">
+                <span className="relative flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-success"></span>
+                </span>
+                LIVE
+              </div>
+              <div className="stat-desc">Listening to Pump.fun</div>
+            </div>
+          </motion.div>
+
+          {/* List Section */}
+          <div className="relative">
+            <div className="absolute left-[-20px] top-0 bottom-0 w-px bg-linear-to-b from-primary/50 via-transparent to-transparent hidden lg:block"></div>
+            <TransactionsList />
           </div>
         </div>
-
-        {/* Transactions List */}
-        <div className="grid gap-4">
-          <TransactionsList />
-        </div>
       </div>
-    </div>
     </PageTransition>
   )
 }

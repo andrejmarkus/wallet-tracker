@@ -1,4 +1,13 @@
 @import 'tailwindcss';
 @plugin 'daisyui' {
-    themes: light --default;
+    themes: light, business, night;
+}
+
+@theme {
+    --color-background-glass: rgba(255, 255, 255, 0.1);
+    --color-border-glass: rgba(255, 255, 255, 0.2);
+}
+
+body {
+    transition: background-color 0.3s ease;
 }

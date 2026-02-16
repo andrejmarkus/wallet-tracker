@@ -64,7 +64,10 @@ export const createUserWallet = async (req: Request, res: Response, next: NextFu
 
         const walletData = walletSchema.safeParse(req.body);
 
-        if (!walletData.success) throw new InvalidRequestError();
+        if (!walletData.success) {
+            console.error('[VALIDATION ERROR] createUserWallet failed:', walletData.error.errors);
+            throw new InvalidRequestError(`Invalid wallet data: ${walletData.error.errors.map(e => e.message).join(', ')}`);
+        }
 
         const { address, name } = walletData.data;
         const wallet = await createWalletForUser(address, userId, name);

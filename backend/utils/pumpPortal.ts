@@ -73,10 +73,10 @@ const pumpPortal: PumpPortal = {
       const userIdsSet = walletSubscriptions.get(tx.traderPublicKey);
       if (!userIdsSet) return;
       
-      const userIds = [...userIdsSet];
+      const userIds = new Set(userIdsSet);
       const users = await userRepository.findAll(); // Simple approach, or add a findManyByIds
       const telegramChatIds = users
-        .filter(u => userIds.includes(u.id))
+        .filter(u => userIds.has(u.id))
         .map(user => user.telegramChatId)
         .filter((id): id is string => id !== null);
 

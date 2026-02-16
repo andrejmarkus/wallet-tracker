@@ -33,19 +33,26 @@ export async function registerUser({ username, password, email }: UserRegister):
 
   try {
     existingUser = await userRepository.findByUsernameOrEmail(username, email);
-  } catch {
-    throw new DatabaseOperationError();
+  } catch (err: any) {
+    console.error('[DATABASE ERROR] authService.registerUser -> findByUsernameOrEmail failed:', err);
+    throw new DatabaseOperationError(`Prisma error: ${err.message || 'Unknown'}`);
   }
 
   if (existingUser) throw new UserAlreadyExistsError();
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  const user = await userRepository.create({
-    email,
-    password: hashedPassword,
-    username,
-  });
+  let user;
+  try {
+    user = await userRepository.create({
+      email,
+      password: hashedPassword,
+      username,
+    });
+  } catch (err: any) {
+    console.error('[DATABASE ERROR] authService.registerUser -> create user failed:', err);
+    throw new DatabaseOperationError(`Prisma error: ${err.message || 'Unknown'}`);
+  }
 
   return {
     id: user.id,

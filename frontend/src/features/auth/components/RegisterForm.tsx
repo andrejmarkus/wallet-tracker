@@ -6,54 +6,96 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import api from "../../../lib/api";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useAuth } from "../../../lib/context/AuthContext";
+import { useState } from "react";
 
 const RegisterForm = () => {
+    const { fetchUser } = useAuth();
     const navigate = useNavigate();
+    const [isLoading, setIsLoading] = useState(false);
     const { register, handleSubmit, formState: { errors } } = useForm<RegisterFormData>({
         resolver: zodResolver(registerFormDataSchema),
     });
 
     const onSubmit: SubmitHandler<RegisterFormData> = async (data) => {
-        const response = await api.post("/auth/register", {
-            username: data.username,
-            email: data.email,
-            password: data.password
-        });
-        if (response.status === 201) {
-            navigate('/app', { replace: true });
-            toast.success("Registration successful!");
-            return;
+        setIsLoading(true);
+        try {
+            const response = await api.post("/auth/register", {
+                username: data.username,
+                email: data.email,
+                password: data.password
+            });
+            if (response.status === 201) {
+                await fetchUser();
+                toast.success("Registration successful!");
+                navigate('/app', { replace: true });
+                return;
+            }
+        } catch (error: any) {
+            const message = error.response?.data?.message || "Registration failed. Please try again.";
+            toast.error(message);
+        } finally {
+            setIsLoading(false);
         }
-        toast.error("Registration failed. ", response.data.message);
     };
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3 w-full max-w-md mx-auto">
-            <fieldset className="fieldset w-full">
-                <legend className="fieldset-legend">Username</legend>
-                <input id="username" type="text" className="input w-full" {...register("username")} />
-                {errors.username && <p className="label text-error">{errors.username.message}</p>}
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 w-full max-w-md mx-auto">
+            <fieldset className="fieldset">
+                <legend className="fieldset-legend font-black uppercase text-xs opacity-50">Username</legend>
+                <input 
+                    id="username" 
+                    type="text" 
+                    className={`input w-full validator ${errors.username ? 'input-error' : ''}`} 
+                    placeholder="johndoe"
+                    {...register("username")} 
+                />
+                {errors.username && <p className="fieldset-label text-error">{errors.username.message}</p>}
             </fieldset>
 
-            <fieldset className="fieldset w-full">
-                <legend className="fieldset-legend">Email</legend>
-                <input id="email" type="email" className="input w-full" {...register("email")} />
-                {errors.email && <p className="label text-error">{errors.email.message}</p>}
+            <fieldset className="fieldset">
+                <legend className="fieldset-legend font-black uppercase text-xs opacity-50">Email</legend>
+                <input 
+                    id="email" 
+                    type="email" 
+                    className={`input w-full validator ${errors.email ? 'input-error' : ''}`} 
+                    placeholder="email@example.com"
+                    {...register("email")} 
+                />
+                {errors.email && <p className="fieldset-label text-error">{errors.email.message}</p>}
             </fieldset>
 
-            <fieldset className="fieldset w-full">
-                <legend className="fieldset-legend">Password</legend>
-                <input id="password" type="password" className="input w-full" {...register("password")} />
-                {errors.password && <p className="label text-error">{errors.password.message}</p>}
+            <fieldset className="fieldset">
+                <legend className="fieldset-legend font-black uppercase text-xs opacity-50">Password</legend>
+                <input 
+                    id="password" 
+                    type="password" 
+                    className={`input w-full validator ${errors.password ? 'input-error' : ''}`} 
+                    placeholder="••••••••"
+                    {...register("password")} 
+                />
+                {errors.password && <p className="fieldset-label text-error">{errors.password.message}</p>}
             </fieldset>
 
-            <fieldset className="fieldset w-full">
-                <legend className="fieldset-legend">Confirm Password</legend>
-                <input id="confirmPassword" type="password" className="input w-full" {...register("confirmPassword")} />
-                {errors.confirmPassword && <p className="label text-error">{errors.confirmPassword.message}</p>}
+            <fieldset className="fieldset">
+                <legend className="fieldset-legend font-black uppercase text-xs opacity-50">Confirm Password</legend>
+                <input 
+                    id="confirmPassword" 
+                    type="password" 
+                    className={`input w-full validator ${errors.confirmPassword ? 'input-error' : ''}`} 
+                    placeholder="••••••••"
+                    {...register("confirmPassword")} 
+                />
+                {errors.confirmPassword && <p className="fieldset-label text-error">{errors.confirmPassword.message}</p>}
             </fieldset>
 
-            <button type="submit" className="btn btn-primary w-full mt-3">Register</button>
+            <button 
+                type="submit" 
+                disabled={isLoading}
+                className="btn btn-primary w-full mt-4 font-black shadow-lg shadow-primary/20 h-12"
+            >
+                {isLoading ? <span className="loading loading-spinner" /> : "Create Account"}
+            </button>
         </form>
     )
 }

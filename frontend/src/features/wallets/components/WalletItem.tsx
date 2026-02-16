@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { usePumpPortal } from '../../../lib/hooks/usePumpPortal';
 import { LuTrash, LuCopy, LuExternalLink, LuPencil, LuCheck, LuX } from 'react-icons/lu';
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 
 const WalletItem = ({ address, name }: WalletData) => {
     const [isEditing, setIsEditing] = useState(false);
@@ -67,107 +68,111 @@ const WalletItem = ({ address, name }: WalletData) => {
     };
 
     return (
-        <div className="card bg-base-100 shadow-md hover:shadow-lg transition-shadow duration-200">
-            <div className="card-body">
-                <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-3">
+        <motion.div 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="group card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300 border border-base-content/5 overflow-hidden"
+        >
+            <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-500"></div>
+            
+            <div className="card-body p-6">
+                <div className="flex justify-between items-center sm:flex-row flex-col gap-4">
+                    <div className="flex items-center gap-4 w-full">
                         <div className="avatar placeholder">
-                            <div className="bg-neutral text-neutral-content rounded-full w-12">
-                                <span className="text-xl">{ name?.slice(0, 2) ?? address.slice(0, 2) }</span>
+                            <div className="bg-linear-to-br from-primary to-secondary text-primary-content rounded-2xl w-14 h-14 shadow-lg shadow-primary/20">
+                                <span className="text-xl font-black uppercase">
+                                    {(name ?? address).slice(0, 2)}
+                                </span>
                             </div>
                         </div>
-                        <div>
+                        <div className="flex-1 min-w-0">
                             {isEditing ? (
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 flex-wrap">
                                     <input
                                         type="text"
                                         value={editedName}
                                         onChange={(e) => setEditedName(e.target.value)}
-                                        className="input input-sm input-bordered w-full max-w-xs"
+                                        className="input input-bordered input-sm focus:input-primary transition-all w-full md:w-auto"
                                         placeholder={truncateAddress(address)}
+                                        autoFocus
                                     />
-                                    <div className="tooltip" data-tip="Remove name">
-                                        <button
-                                            onClick={handleRemoveName}
-                                            disabled={updateMutation.isPending}
-                                            className="btn btn-sm btn-error btn-square"
-                                        >
-                                            {updateMutation.isPending ? (
-                                                <span className="loading loading-spinner loading-sm" />
-                                            ) : (
-                                                <LuTrash size={15} />
-                                            )}
-                                        </button>
-                                    </div>
-                                    <div className="tooltip" data-tip="Update name">
+                                    <div className="flex gap-1">
                                         <button
                                             onClick={handleUpdateName}
                                             disabled={updateMutation.isPending}
-                                            className="btn btn-sm btn-success btn-square"
+                                            className="btn btn-sm btn-circle btn-success"
+                                            title="Save"
                                         >
-                                            {updateMutation.isPending ? (
-                                                <span className="loading loading-spinner loading-sm" />
-                                            ) : (
-                                                <LuCheck size={15} />
-                                            )}
+                                            {updateMutation.isPending ? <span className="loading loading-spinner loading-xs" /> : <LuCheck size={16} />}
                                         </button>
-                                    </div>
-                                    <div className="tooltip" data-tip="Cancel edit">
+                                        <button
+                                            onClick={handleRemoveName}
+                                            className="btn btn-sm btn-circle btn-error"
+                                            title="Remove Name"
+                                        >
+                                            <LuTrash size={14} />
+                                        </button>
                                         <button
                                             onClick={handleCancelEdit}
-                                            disabled={updateMutation.isPending}
-                                            className="btn btn-sm btn-ghost btn-square"
+                                            className="btn btn-sm btn-circle btn-ghost"
+                                            title="Cancel"
                                         >
-                                            <LuX size={15} />
+                                            <LuX size={16} />
                                         </button>
                                     </div>
                                 </div>
                             ) : (
-                                <h3 className="font-mono text-lg flex items-center gap-2">
-                                    {name ?? truncateAddress(address)}
+                                <div className="flex items-center gap-2">
+                                    <h3 className="text-xl font-bold truncate max-w-50 md:max-w-md">
+                                        {name ?? truncateAddress(address)}
+                                    </h3>
                                     <button
                                         onClick={() => setIsEditing(true)}
-                                        className="btn btn-xs btn-ghost btn-square"
+                                        className="btn btn-ghost btn-xs btn-circle opacity-0 group-hover:opacity-100 transition-opacity"
                                     >
                                         <LuPencil size={12} />
                                     </button>
-                                </h3>
+                                </div>
                             )}
-                            <div className="flex gap-2 mt-1">
+                            <div className="text-xs font-mono opacity-40 mt-1 mb-2 truncate">
+                                {address}
+                            </div>
+                            <div className="flex flex-wrap gap-2">
                                 <button
                                     onClick={handleCopyAddress}
-                                    className="btn btn-xs btn-ghost gap-1"
+                                    className="btn btn-xs btn-outline btn-primary gap-1 lowercase font-black"
                                 >
-                                    <LuCopy className="h-3 w-3" /> Copy
+                                    <LuCopy size={12} /> copy addr
                                 </button>
                                 <a
                                     href={`https://solscan.io/account/${address}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="btn btn-xs btn-ghost gap-1"
+                                    className="btn btn-xs btn-outline gap-1 lowercase font-black"
                                 >
-                                    <LuExternalLink className="h-3 w-3" /> Solscan
+                                    <LuExternalLink size={12} /> solscan
                                 </a>
                             </div>
                         </div>
                     </div>
-                    <div className="tooltip" data-tip="Delete wallet">
+                    <div className="flex flex-row md:flex-col gap-2 shrink-0 self-end md:self-center">
                         <button
                             onClick={() => handleDeleteWallet(address)}
                             disabled={mutation.isPending}
-                            className="btn btn-error btn-square"
+                            className="btn btn-ghost border-error/20 hover:bg-error hover:text-error-content btn-square btn-md transition-colors"
                         >
                             {mutation.isPending ? (
-                                <span className="loading loading-spinner loading-sm" />
+                                <span className="loading loading-spinner loading-md" />
                             ) : (
-                                <LuTrash size={15} />
+                                <LuTrash size={18} />
                             )}
                         </button>
                     </div>
                 </div>
             </div>
-        </div>
+        </motion.div>
     );
 };
+
 
 export default WalletItem;

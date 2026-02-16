@@ -2,7 +2,7 @@ import { prisma } from '../database/prisma';
 import { PrismaClient, Wallet as PrismaWallet, UserWallet as PrismaUserWallet } from '../generated/prisma';
 
 export class WalletRepository {
-  private prisma: PrismaClient;
+  private readonly prisma: PrismaClient;
 
   constructor() {
     this.prisma = prisma;
