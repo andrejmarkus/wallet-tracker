@@ -1,16 +1,11 @@
-import prisma from "../database/prisma";
 import { DatabaseOperationError, WalletNotFoundError } from "../errors";
 import { Wallet } from "../types";
+import walletRepository from "../repositories/wallet.repository";
 
 export async function getWallets(): Promise<Wallet[]> {
     try {
-        const wallets = await prisma.wallet.findMany({
-            select: {
-                address: true,
-            }
-        });
-
-        return wallets;
+        const wallets = await walletRepository.findAllWithSubscribers(); 
+        return wallets.map(w => ({ address: w.address }));
     } catch {
         throw new DatabaseOperationError();
     }
@@ -18,31 +13,8 @@ export async function getWallets(): Promise<Wallet[]> {
 
 export async function getWalletsOfUser(userId: string): Promise<Wallet[]> {
     try {
-        const wallets = await prisma.wallet.findMany({
-            where: {
-                users: {
-                    some: {
-                        userId
-                    }
-                }
-            },
-            select: {
-                address: true,
-                users: {
-                    where: {
-                        userId
-                    },
-                    select: {
-                        name: true
-                    }
-                }
-            }
-        });
-
-        return wallets.map(wallet => ({
-            address: wallet.address,
-            name: wallet.users[0]?.name
-        }));
+        const wallets = await walletRepository.findWalletsByUser(userId);
+        return wallets.map(w => ({ address: w.address, name: w.name }));
     } catch {
         throw new DatabaseOperationError();
     }
@@ -50,24 +22,15 @@ export async function getWalletsOfUser(userId: string): Promise<Wallet[]> {
 
 export async function getWalletOfUserByAddress(address: string, userId: string): Promise<Wallet | null> {
     try {
-        const wallet = await prisma.wallet.findUnique({
-            where: { address },
-            include: {
-                users: {
-                    where: {
-                        userId
-                    }
-                }
-            }
-        });
+        const uw = await walletRepository.findUserWallet(userId, address);
 
-        if (!wallet || wallet.users.length === 0) {
+        if (!uw) {
             return null;
         }
 
         return {
-            address: wallet.address,
-            name: wallet.users[0].name
+            address: uw.walletId,
+            name: uw.name
         };
     } catch {
         throw new DatabaseOperationError();
@@ -76,62 +39,17 @@ export async function getWalletOfUserByAddress(address: string, userId: string):
 
 export async function createWalletForUser(address: string, userId: string, walletName?: string | null): Promise<Wallet> {
     try {
-        const existingWallet = await prisma.wallet.findUnique({
-            where: { address },
-            include: {
-                users: {
-                    where: {
-                        userId
-                    }
-                }
-            }
-        });
+        await walletRepository.upsert(address);
+        
+        const existingUw = await walletRepository.findUserWallet(userId, address);
 
-        if (existingWallet) {
-            if (existingWallet.users.length === 0) {
-                await prisma.userWallet.create({
-                    data: {
-                        userId,
-                        walletId: address,
-                        name: walletName
-                    }
-                });
-            } else {
-                await prisma.userWallet.update({
-                    where: {
-                        userId_walletId: {
-                            userId,
-                            walletId: address
-                        }
-                    },
-                    data: {
-                        name: walletName
-                    }
-                });
-            }
-
-            return {
-                address: existingWallet.address,
-                name: walletName
-            };
+        if (!existingUw) {
+            await walletRepository.createUserWallet(userId, address, walletName ?? undefined);
+        } else {
+             await walletRepository.updateUserWallet(userId, address, walletName);
         }
 
-        await prisma.wallet.create({
-            data: {
-                address,
-                users: {
-                    create: {
-                        userId,
-                        name: walletName
-                    }
-                }
-            }
-        });
-
-        return {
-            address,
-            name: walletName
-        };
+        return { address, name: walletName };
     } catch {
         throw new DatabaseOperationError();
     }
@@ -139,72 +57,32 @@ export async function createWalletForUser(address: string, userId: string, walle
 
 export async function updateWalletNameForUser(address: string, userId: string, newName?: string | null): Promise<void> {
     try {
-        const wallet = await prisma.wallet.findUnique({
-            where: { address },
-            include: {
-                users: true
-            }
-        });
+        const uw = await walletRepository.findUserWallet(userId, address);
 
-        if (!wallet) {
+        if (!uw) {
             throw new WalletNotFoundError();
         }
 
-        const userWallet = wallet.users.find(user => user.userId === userId);
-        if (!userWallet) {
-            throw new WalletNotFoundError();
-        }
-
-        await prisma.userWallet.update({
-            where: {
-                userId_walletId: {
-                    userId,
-                    walletId: address
-                }
-            },
-            data: {
-                name: newName
-            }
-        });
+        await walletRepository.updateUserWallet(userId, address, newName);
     } catch (error) {
-        if (error instanceof WalletNotFoundError) {
-            throw error;
-        }
+        if (error instanceof WalletNotFoundError) throw error;
         throw new DatabaseOperationError();
     }
 }
 
 export async function deleteWalletForUser(address: string, userId: string): Promise<void> {
     try {
-        const wallet = await prisma.wallet.findUnique({
-            where: { address },
-            include: {
-                users: true
-            }
-        });
+        const uw = await walletRepository.findUserWallet(userId, address);
 
-        if (!wallet) {
+        if (!uw) {
             throw new WalletNotFoundError();
         }
 
-        if (wallet.users.length === 1 && wallet.users[0].userId === userId) {
-            await prisma.wallet.delete({
-                where: { address }
-            });
-        } else {
-            await prisma.userWallet.delete({
-                where: {
-                    userId_walletId: {
-                        userId,
-                        walletId: address
-                    }
-                }
-            });
-        }
+        await walletRepository.deleteUserWallet(userId, address);
+        await walletRepository.deleteWalletIfNoSubscribers(address);
+
     } catch (error) {
-        if (error instanceof WalletNotFoundError) {
-            throw error;
-        }
+        if (error instanceof WalletNotFoundError) throw error;
         throw new DatabaseOperationError();
     }
 }

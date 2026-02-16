@@ -1,8 +1,8 @@
-import api from '../lib/api';
+import api from '../../../lib/api';
 import { toast } from 'react-toastify';
-import type { WalletData } from '../types';
+import type { WalletData } from '../../../types';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { usePumpPortal } from '../lib/hooks/usePumpPortal';
+import { usePumpPortal } from '../../../lib/hooks/usePumpPortal';
 import { LuTrash, LuCopy, LuExternalLink, LuPencil, LuCheck, LuX } from 'react-icons/lu';
 import { useState } from 'react';
 

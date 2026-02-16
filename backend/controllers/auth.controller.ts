@@ -4,6 +4,7 @@ import { InvalidRequestError, UserNotLoggedInError } from '../errors';
 import { generateJwtRefreshToken, generateJwtToken, loginUser, registerUser } from '../services/auth.service';
 import { JWT_EXPIRES_IN, JWT_REFRESH_EXPIRES_IN, JWT_REFRESH_SECRET, NODE_ENV } from '../config/env';
 import { JwtPayload, verify } from 'jsonwebtoken';
+import { ApiResponseBuilder } from '../utils/apiResponse';
 import ms from 'ms';
 
 export const login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -28,13 +29,8 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
       sameSite: 'lax',
       maxAge: ms(JWT_EXPIRES_IN)
     });
-    res.status(200).json({
-      status: 'success',
-      message: 'Login successful',
-      data: {
-        user
-      },
-    });
+
+    res.status(200).json(ApiResponseBuilder.success({ user }, 'Login successful'));
   } catch (error) {
     next(error);
   }
@@ -62,13 +58,8 @@ export const register = async (req: Request, res: Response, next: NextFunction):
       sameSite: 'lax',
       maxAge: ms(JWT_EXPIRES_IN)
     });
-    res.status(201).json({
-      status: 'success',
-      message: 'User created successfully',
-      data: { 
-        user
-      },
-    });
+
+    res.status(201).json(ApiResponseBuilder.success({ user }, 'User created successfully'));
   } catch (error) {
     next(error);
   }
@@ -90,7 +81,7 @@ export const logout = async (req: Request, res: Response, next: NextFunction): P
       sameSite: 'lax',
       maxAge: ms(JWT_EXPIRES_IN)
     });
-    res.status(200).json({ message: 'User signed out successfully' });
+    res.status(200).json(ApiResponseBuilder.success(null, 'User signed out successfully'));
   } catch (error) {
     next(error);
   }

@@ -1,9 +1,9 @@
 import { useForm } from "react-hook-form"
 import type { SubmitHandler } from "react-hook-form"
-import type { RegisterFormData } from "../types";
-import { registerFormDataSchema } from "../schemas";
+import type { RegisterFormData } from "../../../types";
+import { registerFormDataSchema } from "../../../schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
-import api from "../lib/api";
+import api from "../../../lib/api";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 

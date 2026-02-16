@@ -4,6 +4,7 @@ services:
     command:
       - "--api.insecure=true"
       - "--providers.docker=true"
+      - "--providers.docker.endpoint=unix:///var/run/docker.sock"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
     ports:
@@ -11,7 +12,7 @@ services:
       - "8080:8080"
     restart: always
     volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "//var/run/docker.sock:/var/run/docker.sock"
     labels:
       - "traefik.enable=true"
 
@@ -27,12 +28,15 @@ services:
     volumes:
       - ./backend:/app
       - /app/node_modules
-      - /app/__tests__
+      - /app/prisma
+      - /app/generated/prisma
     depends_on:
       - wallettracker-db
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.wallettracker-api.rule=Host(`wallettracker-api.local`)"
+      - "traefik.http.routers.wallettracker-api.rule=Host(`api.localhost`)"
+      - "traefik.http.routers.wallettracker-api.entrypoints=web"
+      - "traefik.http.services.wallettracker-api.loadbalancer.server.port=3000"
 
   wallettracker-frontend:
     build:
@@ -50,10 +54,20 @@ services:
       - wallettracker-api
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.wallettracker-frontend.rule=Host(`wallettracker-frontend.local`)"
+      - "traefik.http.routers.wallettracker-frontend.rule=Host(`app.localhost`) || Host(`localhost`)"
+      - "traefik.http.routers.wallettracker-frontend.entrypoints=web"
+      - "traefik.http.services.wallettracker-frontend.loadbalancer.server.port=3000"
 
   wallettracker-db:
     image: postgres:latest
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-wallettracker}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
 
 volumes:
   db-data:

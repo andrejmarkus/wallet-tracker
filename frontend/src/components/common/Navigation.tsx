@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { useAuth } from '../lib/context/AuthContext'
+import { useAuth } from '../../lib/context/AuthContext'
 import AvatarDropdown from './AvatarDropdown'
 
 const Navigation = () => {

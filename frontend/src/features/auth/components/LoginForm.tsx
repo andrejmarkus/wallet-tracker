@@ -1,12 +1,12 @@
 import { useForm } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
-import type { LoginFormData } from "../types";
-import { loginFormDataSchema } from "../schemas";
+import type { LoginFormData } from "../../../types";
+import { loginFormDataSchema } from "../../../schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
-import api from "../lib/api";
+import api from "../../../lib/api";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { useAuth } from "../lib/context/AuthContext";
+import { useAuth } from "../../../lib/context/AuthContext";
 
 const LoginForm = () => {
     const { fetchUser } = useAuth();

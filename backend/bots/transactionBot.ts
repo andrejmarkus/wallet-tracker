@@ -1,22 +1,43 @@
-import { Bot } from 'grammy'
+import { Bot, GrammyError, HttpError } from 'grammy'
 import { TELEGRAM_BOT_TOKEN } from '../config/env'
-import prisma from '../database/prisma'
 import { getUserByTelegramChatId } from '../services/user.service'
 import { walletSchema } from '../schemas'
 import { createWalletForUser, deleteWalletForUser, getWalletsOfUser } from '../services/wallet.service'
 import { UserNotFoundError, WalletNotFoundError } from '../errors'
 import pumpPortal from '../utils/pumpPortal'
+import telegramRepository from '../repositories/telegram.repository'
+import logger from '../utils/logger'
 
 const transactionBot = new Bot(TELEGRAM_BOT_TOKEN)
 
 export async function initializeTransactionBot() {
-  await transactionBot.api.setMyCommands([
-    { command: 'help', description: 'Get help with using the bot' },
-    { command: 'start', description: 'Link your Telegram account' },
-    { command: 'add', description: 'Add a Solana wallet to your account' },
-    { command: 'remove', description: 'Remove a Solana wallet from your account' },
-    { command: 'wallets', description: 'List all linked Solana wallets' }
-  ])
+  if (!TELEGRAM_BOT_TOKEN || TELEGRAM_BOT_TOKEN === 'YOUR_TELEGRAM_BOT_TOKEN') {
+    logger.warn('TELEGRAM_BOT_TOKEN is not set or using placeholder. Bot features will be disabled.');
+    return;
+  }
+
+  try {
+    await transactionBot.api.setMyCommands([
+      { command: 'help', description: 'Get help with using the bot' },
+      { command: 'start', description: 'Link your Telegram account' },
+      { command: 'add', description: 'Add a Solana wallet to your account' },
+      { command: 'remove', description: 'Remove a Solana wallet from your account' },
+      { command: 'wallets', description: 'List all linked Solana wallets' }
+    ])
+    logger.info('Telegram bot commands initialized')
+  } catch (error) {
+    logger.error('Failed to initialize Telegram bot commands. Ensure TELEGRAM_BOT_TOKEN is correct.', { error })
+  }
+}
+
+export function startBot() {
+  if (!TELEGRAM_BOT_TOKEN || TELEGRAM_BOT_TOKEN === 'YOUR_TELEGRAM_BOT_TOKEN') {
+    return;
+  }
+
+  transactionBot.start().catch((error) => {
+    logger.error('Telegram bot failed to start. Ensure TELEGRAM_BOT_TOKEN is correct.', { error })
+  })
 }
 
 transactionBot.command('help', ctx => {
@@ -38,9 +59,7 @@ transactionBot.command('start', async ctx => {
     return
   }
 
-  const telegramLinkToken = await prisma.telegramLinkToken.findUnique({
-    where: { token }
-  })
+  const telegramLinkToken = await telegramRepository.findToken(token)
 
   if (!telegramLinkToken || telegramLinkToken.expiresAt < new Date()) {
     ctx.reply('Invalid or expired token. Please try again.')
@@ -48,20 +67,15 @@ transactionBot.command('start', async ctx => {
   }
 
   try {
-    await prisma.telegramLinkToken.delete({
-      where: { token }
-    })
+    await telegramRepository.deleteToken(telegramLinkToken.id)
 
-    const user = await prisma.user.update({
-      where: { id: telegramLinkToken.userId },
-      data: { telegramChatId: ctx.chatId.toString() }
-    })
+    const user = await telegramRepository.updateTelegramChatId(telegramLinkToken.userId, ctx.chatId.toString())
 
     ctx.reply(
       `Your Telegram account has been successfully linked, ${user.username || user.email}!`
     )
   } catch (error) {
-    console.error('Error linking Telegram account:', error)
+    logger.error(`Error linking Telegram account: ${error}`)
     ctx.reply(
       'An error occurred while linking your account. Please try again later.'
     )

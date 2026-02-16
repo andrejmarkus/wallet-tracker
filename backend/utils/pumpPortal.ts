@@ -1,6 +1,8 @@
 import WebSocket from 'ws';
-import prisma from '../database/prisma';
 import { Transaction } from '../types';
+import walletRepository from '../repositories/wallet.repository';
+import userRepository from '../repositories/user.repository';
+import logger from './logger';
 
 interface PumpPortal {
   ws: WebSocket | null;
@@ -23,33 +25,24 @@ const pumpPortal: PumpPortal = {
   },
   init() {
     if (this.ws) {
-      console.log('[PumpPortal] WebSocket already initialized');
+      logger.info('[PumpPortal] WebSocket already initialized');
       return;
     }
-    console.log('[PumpPortal] Initializing WebSocket connection to Pump Portal');
+    logger.info('[PumpPortal] Initializing WebSocket connection to Pump Portal');
 
     this.ws = new WebSocket('wss://pumpportal.fun/api/data');
 
     this.ws.on('open', async () => {
-      console.log('[PumpPortal] Connected to Pump Portal WebSocket');
+      logger.info('[PumpPortal] Connected to Pump Portal WebSocket');
       
-      const wallets = await prisma.wallet.findMany({
-        select: {
-          address: true,
-          users: {
-            select: {
-              userId: true,
-            },
-          }
-        },
-      });
+      const wallets = await walletRepository.findAllWithSubscribers();
 
       wallets.forEach(wallet => {
         const walletAddress = wallet.address;
-        const subscribers = new Set(wallet.users.map(user => user.userId));
+        const subscribers = new Set<string>(wallet.users.map((user: any) => user.userId));
         if (subscribers.size > 0) {
           walletSubscriptions.set(walletAddress, subscribers);
-          console.log(`[PumpPortal] Subscribed to wallet ${walletAddress} with ${subscribers.size} users`);
+          logger.debug(`[PumpPortal] Subscribed to wallet ${walletAddress} with ${subscribers.size} users`);
         }
       });
 
@@ -62,7 +55,7 @@ const pumpPortal: PumpPortal = {
               keys: [walletId],
             }),
           );
-          console.log(`[PumpPortal] Resubscribed to wallet ${walletId}`);
+          logger.debug(`[PumpPortal] Resubscribed to wallet ${walletId}`);
         }
       });
     });
@@ -72,16 +65,20 @@ const pumpPortal: PumpPortal = {
     if (!this.ws) return;
 
     this.ws.on('message', async (message: string) => {
-      console.log(`[PumpPortal] Received message: ${message}`);
       const data = JSON.parse(message.toString());
       const tx = data as Transaction;
 
-      const userIds = walletSubscriptions.get(tx.traderPublicKey);
-      const users = await prisma.user.findMany({
-        where: { id: { in: [...userIds ?? []] } },
-        select: { telegramChatId: true }
-      });
-      const telegramChatIds = users.map(user => user.telegramChatId).filter((id): id is string => id !== null);
+      if (!tx.traderPublicKey) return; // Ignore non-trade messages or errors
+
+      const userIdsSet = walletSubscriptions.get(tx.traderPublicKey);
+      if (!userIdsSet) return;
+      
+      const userIds = [...userIdsSet];
+      const users = await userRepository.findAll(); // Simple approach, or add a findManyByIds
+      const telegramChatIds = users
+        .filter(u => userIds.includes(u.id))
+        .map(user => user.telegramChatId)
+        .filter((id): id is string => id !== null);
 
       callback(tx, telegramChatIds);
     });
@@ -89,7 +86,7 @@ const pumpPortal: PumpPortal = {
   subscribeWallet(userId: string, walletId: string) {
     if (!this.ws) this.init();
     if (!this.isOpen) {
-      console.log(`[PumpPortal] Queued subscribe for wallet ${walletId}`);
+      logger.warn(`[PumpPortal] Queued subscribe for wallet ${walletId}`);
       return;
     }
     this._doSubscribe(userId, walletId);
@@ -97,7 +94,7 @@ const pumpPortal: PumpPortal = {
   unsubscribeWallet(userId: string, walletId: string) {
     if (!this.ws) this.init();
     if (!this.isOpen) {
-      console.log(`[PumpPortal] Queued unsubscribe for wallet ${walletId}`);
+      logger.warn(`[PumpPortal] Queued unsubscribe for wallet ${walletId}`);
       return;
     }
     this._doUnsubscribe(userId, walletId);

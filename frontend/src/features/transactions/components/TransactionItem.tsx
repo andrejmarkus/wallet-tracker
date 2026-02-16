@@ -1,7 +1,7 @@
 import { LuExternalLink } from 'react-icons/lu'
 import { FiArrowUpRight, FiArrowDownRight } from 'react-icons/fi'
-import type { Transaction } from '../types'
-import api from '../lib/api'
+import type { Transaction } from '../../../types'
+import api from '../../../lib/api'
 import { useQuery } from '@tanstack/react-query'
 
 const TransactionItem = (transaction: Transaction) => {

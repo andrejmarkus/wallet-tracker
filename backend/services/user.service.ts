@@ -1,19 +1,17 @@
-import prisma from '../database/prisma';
+import userRepository from '../repositories/user.repository';
 import { DatabaseOperationError, UserNotFoundError } from '../errors';
 import { User } from '../types';
 
 export async function getUsers(): Promise<User[]> {
   try {
-    const users = await prisma.user.findMany({
-      select: {
-        id: true,
-        email: true,
-        username: true,
-        telegramChatId: true,
-      },
-    });
+    const users = await userRepository.findAll();
 
-    return users;
+    return users.map(user => ({
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        telegramChatId: user.telegramChatId,
+    }));
   } catch {
     throw new DatabaseOperationError();
   }
@@ -23,15 +21,7 @@ export async function getUserById(id: string): Promise<User> {
   let user;
 
   try {
-    user = await prisma.user.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        email: true,
-        username: true,
-        telegramChatId: true,
-      },
-    });
+    user = await userRepository.findById(id);
   } catch {
     throw new DatabaseOperationError();
   }
@@ -40,22 +30,19 @@ export async function getUserById(id: string): Promise<User> {
     throw new UserNotFoundError();
   }
 
-  return user;
+  return {
+    id: user.id,
+    email: user.email,
+    username: user.username,
+    telegramChatId: user.telegramChatId,
+  };
 }
 
 export async function getUserByTelegramChatId(telegramChatId: string): Promise<User> {
   let user;
 
   try {
-    user = await prisma.user.findFirst({
-      where: { telegramChatId },
-      select: {
-        id: true,
-        email: true,
-        username: true,
-        telegramChatId: true,
-      },
-    });
+    user = await userRepository.findByTelegramChatId(telegramChatId);
   } catch {
     throw new DatabaseOperationError();
   }
@@ -64,5 +51,10 @@ export async function getUserByTelegramChatId(telegramChatId: string): Promise<U
     throw new UserNotFoundError();
   }
 
-  return user;
+  return {
+    id: user.id,
+    email: user.email,
+    username: user.username,
+    telegramChatId: user.telegramChatId,
+  };
 }

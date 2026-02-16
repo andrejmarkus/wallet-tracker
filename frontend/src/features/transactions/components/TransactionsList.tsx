@@ -1,18 +1,8 @@
-import { useState } from 'react';
-import { usePumpPortal } from '../lib/hooks/usePumpPortal';
-import type { Transaction } from '../types';
+import { useTransactions } from '../hooks/useTransactions';
 import TransactionItem from './TransactionItem';
 
 const TransactionsList = () => {
-    const [transactions, setTransactions] = useState<Transaction[]>([]);
-  
-    usePumpPortal((transaction: Transaction) => {
-        setTransactions(prev => 
-        prev.some(t => t.signature === transaction.signature) 
-        ? prev 
-        : [transaction, ...prev]
-        );
-    });
+    const transactions = useTransactions();
 
     return transactions.length === 0 ? (
     <div className="card bg-base-100 shadow-md">

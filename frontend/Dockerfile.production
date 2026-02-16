@@ -1,38 +1,15 @@
-# Use Node.js Alpine image
+# Build stage
 FROM node:22-alpine AS base
-
-# Set working directory
 WORKDIR /app
-
-# Install pnpm globally
 RUN npm install -g pnpm
-
-# Copy package files first for better caching
 COPY package.json pnpm-lock.yaml ./
-
-# Install dependencies
 RUN pnpm install --frozen-lockfile
-
-# Copy source code (this will use .dockerignore to exclude node_modules)
 COPY . .
-
-# Build the application
 RUN pnpm build
 
-# Production stage
-FROM node:22-alpine AS production
-
-# Install serve globally
-RUN npm install -g serve
-
-# Set working directory
-WORKDIR /app
-
-# Copy built application from builder stage
-COPY --from=base /app/dist ./dist
-
-# Expose port 5173
-EXPOSE 5173
-
-# Start the application
-CMD ["serve", "-s", "dist"]
+# Serve stage using Nginx for better performance in production
+FROM nginx:stable-alpine AS production
+COPY --from=base /app/dist /usr/share/nginx/html
+# Default nginx configuration handles routing for SPAs
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]

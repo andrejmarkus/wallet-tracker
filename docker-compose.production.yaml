@@ -48,7 +48,7 @@ services:
     env_file:
       - ./frontend/.env.production
     ports:
-      - "3000:3000"
+      - "3000:80"
     depends_on:
       - wallettracker-api
     labels:

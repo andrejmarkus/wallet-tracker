@@ -2,6 +2,7 @@ import { Metaplex } from '@metaplex-foundation/js';
 import { Connection, PublicKey } from '@solana/web3.js';
 import { FailedToFetchDataError } from '../errors';
 import { TokenDetails, TokenRequest } from '../types';
+import logger from '../utils/logger';
 
 const connection = new Connection('https://go.getblock.io/4136d34f90a6488b84214ae26f0ed5f4');
 
@@ -20,7 +21,10 @@ export async function getTokenDetails({
     const paiPriceRequest = await fetch(
       `https://api.coinbase.com/api/v3/brokerage/market/products/SOL-${currencySymbol}`,
     );
-    if (!paiPriceRequest.ok) throw new FailedToFetchDataError();
+    if (!paiPriceRequest.ok) {
+        logger.error(`Failed to fetch price for SOL-${currencySymbol}`);
+        throw new FailedToFetchDataError();
+    }
 
     const { price, quote_name }: { price: number, quote_name: string } = await paiPriceRequest.json();
 
@@ -39,6 +43,6 @@ export async function getTokenDetails({
       tokenMarketCap: tokenMarketCapInSolana * price,
     };
   } catch (error) {
-    console.error(`Failed to fetch token details for ${tokenAddress}:`, error);
+    logger.error(`Failed to fetch token details for ${tokenAddress}: ${error}`);
   }
 }

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { io, Socket } from "socket.io-client";
 import type { Transaction } from "../../types";
 import { useAuth } from "../context/AuthContext";
@@ -9,76 +9,70 @@ let socket: Socket | null = null;
 function getSocket() {
     socket ??= io(`${import.meta.env.VITE_API_URL}transactions`, {
         transports: ["websocket"],
+        autoConnect: false,
     });
 
     return socket;
 }
 
-export function usePumpPortal(onMessage?: (transaction: Transaction) => void) {
-    const socketRef = useRef<Socket | null>(null);
+export function usePumpPortal() {
     const { user } = useAuth();
 
     const subscribeWallet = (walletAddress: string) => {
         console.log("[WebSocket] Subscribing to wallet:", walletAddress);
-        socketRef.current?.emit("subscribeWallet", { userId: user?.id, walletAddress });
+        getSocket().emit("subscribeWallet", { userId: user?.id, walletAddress });
     };
 
-    function unsubscribeWallet(walletAddress: string) {
+    const unsubscribeWallet = (walletAddress: string) => {
         console.log("[WebSocket] Unsubscribing from wallet:", walletAddress);
-        socketRef.current?.emit("unsubscribeWallet", { userId: user?.id, walletAddress });
-    }
+        getSocket().emit("unsubscribeWallet", { userId: user?.id, walletAddress });
+    };
+
+    const onTransaction = (handler: (transaction: Transaction) => void) => {
+        const s = getSocket();
+        s.on("transaction", handler);
+        return () => {
+            s.off("transaction", handler);
+        };
+    };
 
     useEffect(() => {
-        const socket = getSocket();
-        socketRef.current = socket;
+        const s = getSocket();
 
-        if (socket.connected) {
-            console.log("[WebSocket] Already connected, skipping connection");
-            return;
-        } else {
+        if (!s.connected) {
             console.log("[WebSocket] Connecting to Pump Portal");
-            socket.connect();
+            s.connect();
         }
 
-        socket.on("connect", () => {
+        s.on("connect", () => {
             console.log("[WebSocket] Connected");
         });
 
-        socket.on("disconnect", () => {
+        s.on("disconnect", () => {
             console.log("[WebSocket] Disconnected");
         });
 
-        socket.on("connect_error", async (err) => {
+        s.on("connect_error", async (err) => {
             if (err.message === "Authentication error: Unauthorized") {
                 api
                 .post("/auth/refresh")
                 .then(() => {
                     console.log("[WebSocket] Reconnected after token refresh");
-                    socket.connect();
+                    s.connect();
                 })
                 .catch(() => {
                     console.error("[WebSocket] Failed to refresh token, disconnecting");
-                    socket.disconnect();
+                    s.disconnect();
                 });
             } else {
                 console.error("[WebSocket] Connection error:", err);
             }
         });
 
-        socket.on("transactionUpdate", (transaction: Transaction) => {
-            try {
-                onMessage?.(transaction);
-            } catch (err) {
-                console.error("[WebSocket] Invalid message:", err);
-            }
-        });
-
         return () => {
-            if (socket.connected) {
-                socket.disconnect();
-            }
+            // No cleanup here to maintain connection across hooks
         };
-    }, [user]);
+    }, []);
 
-    return { subscribeWallet, unsubscribeWallet };
+    return { subscribeWallet, unsubscribeWallet, onTransaction };
 }

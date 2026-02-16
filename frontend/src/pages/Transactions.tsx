@@ -4,7 +4,8 @@ import api from '../lib/api';
 import { useAuth } from '../lib/context/AuthContext';
 import { LuX } from "react-icons/lu";
 import { toast } from 'react-toastify';
-import TransactionsList from '../components/TransactionsList';
+import TransactionsList from '../features/transactions/components/TransactionsList';
+import PageTransition from '../components/common/PageTransition';
 
 const Transactions = () => {
   const { user, fetchUser } = useAuth();
@@ -42,12 +43,13 @@ const Transactions = () => {
   };
 
   return (
-    <div className='min-h-screen bg-base-200'>
-      <div className='container mx-auto px-4 py-8'>
-        {/* Header Section */}
-        <div className="card bg-base-100 shadow-md mb-8">
-          <div className="card-body">
-            <h2 className="card-title text-3xl mb-4">Transactions</h2>
+    <PageTransition>
+      <div className='min-h-screen bg-base-200'>
+        <div className='container mx-auto px-4 py-8'>
+          {/* Header Section */}
+          <div className="card bg-base-100 shadow-md mb-8">
+            <div className="card-body">
+              <h2 className="card-title text-3xl mb-4">Transactions</h2>
             <div className='flex flex-wrap gap-4 items-center'>
               <NavLink 
                 to="/app/wallets" 
@@ -82,6 +84,7 @@ const Transactions = () => {
         </div>
       </div>
     </div>
+    </PageTransition>
   )
 }
 

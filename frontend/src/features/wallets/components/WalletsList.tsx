@@ -1,8 +1,6 @@
-import { useSuspenseQuery } from "@tanstack/react-query";
-import api from "../lib/api";
-import type { WalletData } from "../types";
+import { useSuspenseWallets } from "../hooks/useWallets";
 import WalletItem from "./WalletItem";
-import { useAuth } from "../lib/context/AuthContext";
+import { useAuth } from "../../../lib/context/AuthContext";
 
 const WalletsList = () => {
     const { user } = useAuth();
@@ -10,13 +8,7 @@ const WalletsList = () => {
         throw new Error("User not authenticated");
     }
 
-    const { data: wallets } = useSuspenseQuery<WalletData[]>({
-        queryKey: ['wallets'],
-        queryFn: async () => {
-            const response = await api.get('/wallets/authorized');
-            return response.data.data.wallets as WalletData[];
-        }
-    });
+    const { data: wallets } = useSuspenseWallets();
 
   return (
     <>

@@ -2,16 +2,14 @@ import { User, UserLogin, UserRegister } from '../types';
 import { DatabaseOperationError, InvalidCredentialsError, UserAlreadyExistsError } from '../errors';
 import { JWT_EXPIRES_IN, JWT_REFRESH_EXPIRES_IN, JWT_REFRESH_SECRET, JWT_SECRET } from '../config/env';
 import jwt from 'jsonwebtoken';
-import prisma from '../database/prisma';
+import userRepository from '../repositories/user.repository';
 import bcrypt from 'bcryptjs';
 
 export async function loginUser({ username, password }: UserLogin): Promise<User> {
   let user;
 
   try {
-    user = await prisma.user.findUnique({
-      where: { username },
-    });
+    user = await userRepository.findByUsername(username);
   } catch {
     throw new DatabaseOperationError();
   }
@@ -34,11 +32,7 @@ export async function registerUser({ username, password, email }: UserRegister):
   let existingUser;
 
   try {
-    existingUser = await prisma.user.findFirst({
-      where: {
-        OR: [{ username }, { email }],
-      },
-    });
+    existingUser = await userRepository.findByUsernameOrEmail(username, email);
   } catch {
     throw new DatabaseOperationError();
   }
@@ -47,12 +41,10 @@ export async function registerUser({ username, password, email }: UserRegister):
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  const user = await prisma.user.create({
-    data: {
-      email,
-      password: hashedPassword,
-      username,
-    },
+  const user = await userRepository.create({
+    email,
+    password: hashedPassword,
+    username,
   });
 
   return {

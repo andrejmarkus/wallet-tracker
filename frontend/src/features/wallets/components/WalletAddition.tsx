@@ -1,35 +1,16 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { walletSchema } from "../schemas";
-import type { WalletData } from "../types";
-import { toast } from "react-toastify";
-import api from "../lib/api";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { usePumpPortal } from "../lib/hooks/usePumpPortal";
+import { walletSchema } from "../../../schemas";
+import type { WalletData } from "../../../types";
+import { useAddWallet } from "../hooks/useWallets";
 import { LuPlus } from "react-icons/lu";
 
 const WalletAddition = () => {
-    const queryClient = useQueryClient();
-
-     const { subscribeWallet } = usePumpPortal();
-
     const { register, handleSubmit, reset, formState: { errors } } = useForm<WalletData>({
         resolver: zodResolver(walletSchema),
     });
 
-    const mutation = useMutation({
-        mutationFn: (data: WalletData) => api.post('/wallets', data),
-        onSuccess: (res) => {
-            const address = res.data.data.wallet.address;
-            toast.success(`Wallet ${address} added successfully!`);
-            reset();
-            queryClient.invalidateQueries({ queryKey: ['wallets'] });
-            subscribeWallet(address);
-        },
-        onError: (error: any) => {
-            toast.error(`Error adding wallet: ${error.message}`);
-        }
-    });
+    const mutation = useAddWallet(reset);
 
     const onSubmit = async (data: WalletData) => mutation.mutate(data);
 

@@ -1,7 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom'
-import api from '../lib/api'
+import api from '../../lib/api'
 import { toast } from 'react-toastify';
-import { useAuth } from '../lib/context/AuthContext';
+import { useAuth } from '../../lib/context/AuthContext';
 import { LuLogOut, LuUser } from 'react-icons/lu';
 
 const AvatarDropdownMenu = () => {

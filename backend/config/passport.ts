@@ -1,7 +1,7 @@
 import passport from 'passport'
 import { Strategy as JwtStrategy } from 'passport-jwt'
 import { JWT_SECRET } from './env'
-import prisma from '../database/prisma'
+import userRepository from '../repositories/user.repository'
 import { Request } from 'express'
 
 const cookieExtractor = (req: Request) => {
@@ -22,11 +22,7 @@ passport.use(
         return done(null, false)
       }
 
-      const user = await prisma.user.findUnique({
-        where: {
-          id: jwt_payload.userId
-        }
-      })
+      const user = await userRepository.findById(jwt_payload.userId)
 
       if (user)
         return done(null, {

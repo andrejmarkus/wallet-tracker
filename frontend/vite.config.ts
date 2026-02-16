@@ -14,6 +14,8 @@ export default defineConfig({
     port: 3000,
     allowedHosts: [
       'wallettracker-frontend.local',
+      'app.localhost',
+      'localhost',
     ],
   },
 })

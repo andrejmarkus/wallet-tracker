@@ -1,19 +1,14 @@
-import prisma from '../database/prisma';
 import { randomUUID } from 'crypto';
 import { DatabaseOperationError } from '../errors';
 import { TelegramToken } from '../types';
+import telegramRepository from '../repositories/telegram.repository';
 
 export async function generateTelegramToken(userId: string): Promise<TelegramToken> {
   try {
     const token = randomUUID();
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-    const telegramLinkToken = await prisma.telegramLinkToken.create({
-      data: {
-        token,
-        userId,
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // Token valid for 24 hours
-      },
-    });
+    const telegramLinkToken = await telegramRepository.createToken(userId, token, expiresAt);
 
     return {
       token: telegramLinkToken.token,
@@ -26,13 +21,8 @@ export async function generateTelegramToken(userId: string): Promise<TelegramTok
 
 export async function unlinkTelegram(userId: string): Promise<void> {
   try {
-    await prisma.telegramLinkToken.deleteMany({
-      where: { userId },
-    });
-    await prisma.user.update({
-      where: { id: userId },
-      data: { telegramChatId: null },
-    });
+    await telegramRepository.deleteTokensByUserId(userId);
+    await telegramRepository.updateTelegramChatId(userId, null);
   } catch {
     throw new DatabaseOperationError();
   }

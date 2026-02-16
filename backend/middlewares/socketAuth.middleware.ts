@@ -1,6 +1,6 @@
 import { Socket } from 'socket.io';
 import { JwtPayload, verify } from 'jsonwebtoken';
-import prisma from '../database/prisma';
+import userRepository from '../repositories/user.repository';
 import { JWT_SECRET } from '../config/env';
 
 export default async function socketAuthMiddleware(
@@ -19,9 +19,7 @@ export default async function socketAuthMiddleware(
 
     const decoded = verify(token, JWT_SECRET) as JwtPayload;
 
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
-    });
+    const user = await userRepository.findById(decoded.userId);
 
     if (!user) {
       return next(new Error('Authentication error: Unauthorized'));
